@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UrbanFood - Il gusto della città</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500;700;900&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+</head>
+<body>
+
+    <!-- ============ NAVBAR ============ -->
+    <nav class="navbar navbar-expand-lg sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="bi bi-fire"></i> UrbanFood
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="fa-solid fa-burger"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto ms-4">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#menu">Menu</a>
+                    </li>
+                </ul>
+                <button class="btn btn-login" data-bs-toggle="modal" data-bs-target="#loginModal">
+                    <i class="bi bi-person-circle"></i> Accedi
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ============ CATEGORIE ============ -->
+    <section class="py-5" id="menu">
+        <div class="container">
+            <h2 class="section-title">Esplora per categoria</h2>
+            <p class="section-subtitle">Scegli tra le nostre specialità</p>
+            <div class="row g-4">
+                <div class="col-6 col-md-4 col-lg-2">
+                    <div class="category-card card">
+                        <img src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400" alt="Burger">
+                        <div class="card-body">
+                            <h5 class="card-title">Burger</h5>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-4 col-lg-2">
+                    <div class="category-card card">
+                        <img src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=400" alt="Pizza">
+                        <div class="card-body">
+                            <h5 class="card-title">Pizza</h5>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-4 col-lg-2">
+                    <div class="category-card card">
+                        <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400" alt="Poke">
+                        <div class="card-body">
+                            <h5 class="card-title">Poke</h5>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-4 col-lg-2">
+                    <div class="category-card card">
+                        <img src="https://images.unsplash.com/photo-1529692236671-f1f6cf9683ba?w=400" alt="Fritti">
+                        <div class="card-body">
+                            <h5 class="card-title">Fritti</h5>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-4 col-lg-2">
+                    <div class="category-card card">
+                        <img src="https://images.unsplash.com/photo-1551024506-0bccd828d307?w=400" alt="Dolci">
+                        <div class="card-body">
+                            <h5 class="card-title">Dolci</h5>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-4 col-lg-2">
+                    <div class="category-card card">
+                        <img src="https://images.unsplash.com/photo-1544145945-f90425340c7e?w=400" alt="Bevande">
+                        <div class="card-body">
+                            <h5 class="card-title">Bevande</h5>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ PIATTI IN EVIDENZA ============ -->
+    <section class="py-5 bg-white">
+        <div class="container">
+            <h2 class="section-title">I più ordinati</h2>
+            <p class="section-subtitle">I piatti preferiti dai nostri clienti</p>
+            <div class="row g-4">
+                <div class="col-sm-6 col-lg-3">
+                    <div class="dish-card card">
+                        <img src="https://images.unsplash.com/photo-1553979459-d2229ba7433b?w=400" alt="Smash Burger">
+                        <div class="card-body">
+                            <h5 class="card-title">Smash Burger</h5>
+                            <p class="dish-desc mb-2">Doppio manzo, cheddar, salsa speciale</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="dish-price">&euro;8.90</span>
+                                <button class="btn btn-add"><i class="bi bi-plus"></i> Aggiungi</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-lg-3">
+                    <div class="dish-card card">
+                        <img src="https://images.unsplash.com/photo-1594007654729-407eedc4be65?w=400" alt="Margherita XL">
+                        <div class="card-body">
+                            <h5 class="card-title">Margherita XL</h5>
+                            <p class="dish-desc mb-2">Pomodoro, mozzarella, basilico fresco</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="dish-price">&euro;7.50</span>
+                                <button class="btn btn-add"><i class="bi bi-plus"></i> Aggiungi</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-lg-3">
+                    <div class="dish-card card">
+                        <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400" alt="Poke Salmone">
+                        <div class="card-body">
+                            <h5 class="card-title">Poke Salmone</h5>
+                            <p class="dish-desc mb-2">Salmone, avocado, riso, edamame</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="dish-price">&euro;11.90</span>
+                                <button class="btn btn-add"><i class="bi bi-plus"></i> Aggiungi</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-lg-3">
+                    <div class="dish-card card">
+                        <img src="https://images.unsplash.com/photo-1529692236671-f1f6cf9683ba?w=400" alt="Chicken Nuggets">
+                        <div class="card-body">
+                            <h5 class="card-title">Chicken Nuggets</h5>
+                            <p class="dish-desc mb-2">10 pezzi croccanti con salsa BBQ</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="dish-price">&euro;6.50</span>
+                                <button class="btn btn-add"><i class="bi bi-plus"></i> Aggiungi</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ FOOTER ============ -->
+    <footer id="contatti">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-lg-4 mb-3">
+                    <h5 class="text-white fw-bold mb-3"><i class="bi bi-fire" style="color: var(--uf-orange);"></i> UrbanFood</h5>
+                    <p class="small">Il gusto della città, direttamente a casa tua. Ordina online dai migliori ristoranti e ricevi in pochi minuti.</p>
+                </div>
+                <div class="col-6 col-lg-2">
+                    <h6>Scopri</h6>
+                    <a href="#">Ristoranti</a>
+                </div>
+                <div class="col-lg-4">
+                    <h6>Contatti</h6>
+                    <p class="small mb-1"><i class="bi bi-envelope me-2"></i>alessandro.valenti@studenti.unimi.it</p>
+                </div>
+            </div>
+            <hr class="my-4">
+            <p class="text-center small mb-0">&copy; 2026 UrbanFood. Tutti i diritti riservati.</p>
+        </div>
+    </footer>
+
+    <!-- ============ MODAL LOGIN ============ -->
+    <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="loginModalLabel">Accedi a UrbanFood</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Chiudi"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="mb-3">
+                            <label for="loginEmail" class="form-label fw-semibold">Email</label>
+                            <input type="email" class="form-control" id="loginEmail" placeholder="nome@email.com" required>
+                        </div>
+                        <div class="mb-4">
+                            <label for="loginPassword" class="form-label fw-semibold">Password</label>
+                            <input type="password" class="form-control" id="loginPassword" placeholder="La tua password" required>
+                        </div>
+                        <button type="submit" class="btn btn-accedi mb-3">Accedi</button>
+                        <p class="text-center mb-0">
+                            Non hai un account? <a href="#" class="link-registrati">Registrati</a>
+                        </p>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

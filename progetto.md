@@ -81,13 +81,13 @@ progetto/
 ```
 
 ### 0.6 server.js
-- [ ] Creare app Express
-- [ ] Connessione MongoDB tramite `config/db.js`
-- [ ] Middleware: `cors()`, `express.json()`, `express.static('public')`
+- [x] Creare app Express
+- [x] Connessione MongoDB tramite `config/db.js`
+- [x] Middleware: `cors()`, `express.json()`, `express.static('public')`
 - [ ] Montare le route: `/api/auth`, `/api/restaurants`, `/api/meals`, `/api/orders`, `/api/stats`
 - [ ] Montare Swagger su `/api-docs`
 - [ ] Avvio seed automatico se DB vuoto
-- [ ] Listen sulla porta da `.env`
+- [x] Listen sulla porta da `.env`
 
 ---
 
@@ -98,7 +98,7 @@ progetto/
 Campi:
 - nome: String, required
 - cognome: String, required
-- email: String, required, unique
+<- email: String, required, unique
 - password: String, required (hash con bcrypt)
 - tipo: String, enum ['ristoratore', 'cliente'], required
 - telefono: String
@@ -110,7 +110,7 @@ Campi:
     scadenza: String,
     titolare: String
   }
-- createdAt: Date
+- createdAt: Date>
 ```
 
 ### 1.2 Restaurant (`models/Restaurant.js`)

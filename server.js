@@ -1,6 +1,22 @@
+// Importa il modulo dotenv per la gestione delle variabili d'ambiente
+require('dotenv').config();
+
+// Importa Express per la creazione del server Node.js
 const express = require('express');
 const app = express();
+
+// Importa il modulo per la connessione al database
+const connectDB = require('./config/db');
+
+// Abilita CORS per tutte le richieste HTTP in entrata. Non serve se gira tutto su localhost:3000
+// ma e' utile se si vuole accedere da un client esterno
+const cors = require('cors');
+app.use(cors());
+
 const port = process.env.PORT || 3000; // Usa la porta definita dall'ambiente o 3000 di default
+
+// Connessione al database
+connectDB();
 
 // Middleware per parsare il JSON nelle richieste
 app.use(express.json());

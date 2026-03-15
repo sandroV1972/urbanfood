@@ -10,6 +10,13 @@ body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background-color: var(--uf-light);
     color: var(--uf-dark);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+#footer {
+    margin-top: auto;
 }
 
 /* ---- NAVBAR ---- */

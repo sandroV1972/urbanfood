@@ -30,6 +30,23 @@ app.get('/api/saluto', (req, res) => {
   res.json({ messaggio: `Ciao, ${nome}!` });
 });
 
+// Importa le rotte
+const routes = require('./routes');
+app.use('/api', routes);
+
+// Middleware per gestire le richieste non trovate
+app.use((req, res) => {
+  res.status(404).json({ error: 'Pagina non trovata' });
+});
+
+// Middleware per gestire gli errori
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ error: 'Si è verificato un errore' });
+});
+
+
+
 // Avvia il server
 app.listen(port, () => {
   console.log(`Server Node.js in ascolto sulla porta ${port}`);

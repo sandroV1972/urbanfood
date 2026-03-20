@@ -7,9 +7,6 @@ function initPage() {
             checkAuth();
         });
 
-    fetch('/components/footer.html')
-        .then(r => r.text())
-        .then(html => document.getElementById('footer').innerHTML = html);
 }
 
 // Controlla se c'è un token e aggiorna la navbar
@@ -18,8 +15,25 @@ function checkAuth() {
     if (!token) return;
 
     const payload = JSON.parse(atob(token.split('.')[1]));
+
+    // Menu links in base al ruolo
+    const navLinks = document.getElementById('navLinks');
+    if (payload.usrType === 'ristoratore') {
+        navLinks.innerHTML = `
+            <li class="nav-item"><a class="nav-link" href="/dashboard">Dashboard</a></li>
+            <li class="nav-item"><a class="nav-link" href="/restaurants">Ristoranti</a></li>
+            <li class="nav-item"><a class="nav-link" href="/orders">Ordini</a></li>
+            <li class="nav-item"><a class="nav-link" href="/stats">Statistiche</a></li>
+        `;
+    } else {
+        navLinks.innerHTML = `
+            <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
+            <li class="nav-item"><a class="nav-link" href="#menu">Menu</a></li>
+        `;
+    }
+
     const btn = document.querySelector('.btn-login');
-    btn.insertAdjacentHTML('beforebegin', `<a href="profile.html" class="navbar-text"><i class ="bi bi-gear me-1"></i></a><span class="navbar-text me-3"> ${payload.name}</span>`);
+    btn.insertAdjacentHTML('beforebegin', `<a href="/profile" class="navbar-text"><i class="bi bi-gear me-1"></i></a><span class="navbar-text me-3"> ${payload.name}</span>`);
 
 
     btn.innerHTML = `<i class="bi bi-person-circle"></i> Logout`;

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UrbanFood - Dashboard</title>
+    <title>SurfShack - Dashboard</title>
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
@@ -13,7 +13,7 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 </head>
@@ -22,9 +22,23 @@
 
     <div class="container py-5">
         <h2 class="section-title">Dashboard Ristoratore</h2>
+        <div class="bg-white rounded-4 p-4 shadow-sm mb-4" id="myRestaurants">
+            <div class="d-flex justify-content-between align-items-center">
+                <h3 class="section-title">I tuoi ristoranti</h3>
+                <a href="/restaurants" class="btn btn-icon-sm"><i class="bi bi-plus"></i></a>
+            </div>
+            <div id="restaurantsList" class="row g-3 mt-2"></div>
+            <p id="noRestaurants" class="text-center mt-3 d-none" style="color: var(--ss-gray);">
+                Non hai ancora ristoranti. <a href="/restaurants" style="color: var(--ss-teal);">Aggiungine uno</a>
+            </p>
+        </div>
+        <div class="bg-white rounded-4 p-4 shadow-sm" id="latestOrders">
+            <h3 class="section-title">Ordini recenti</h3>
+            <p style="color: var(--ss-gray);">Nessun ordine per ora.</p>
+        </div>
     </div>
 
-    <div id="footer"></div>
+
     <div class="toast-container position-fixed top-0 end-0 p-3">
         <div id="toastMessage" class="toast align-items-center border-0" role="alert">
             <div class="d-flex">
@@ -35,5 +49,46 @@
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/js/auth.js"></script>
+    <script>
+        // Se non loggato, torna alla homepage
+        const token = localStorage.getItem('token');
+        if (!token) window.location.href = '/';
+
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        if (payload.usrType !== 'ristoratore') {
+            window.location.href = '/';
+        }
+
+        // Carica i ristoranti del ristoratore
+        async function loadRestaurants() {
+            const res = await fetch('/api/restaurants', {
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            const restaurants = await res.json();
+            const list = document.getElementById('restaurantsList');
+            const noMsg = document.getElementById('noRestaurants');
+
+            if (restaurants.length === 0) {
+                noMsg.classList.remove('d-none');
+                return;
+            }
+
+            list.innerHTML = restaurants.map(r => `
+                <div class="col-md-4">
+                    <div class="card p-3" style="background: rgba(0,206,209,0.08); border: 1px solid rgba(0,206,209,0.2); border-radius: 16px;">
+                        <h5 style="color: var(--ss-sand); font-family: 'Permanent Marker', cursive;">${r.name}</h5>
+                        <p class="mb-1" style="color: var(--ss-gray); font-size: 0.9rem;">
+                            <i class="bi bi-geo-alt"></i> ${r.address}
+                        </p>
+                        <p class="mb-0" style="color: var(--ss-gray); font-size: 0.9rem;">
+                            <i class="bi bi-telephone"></i> ${r.phone}
+                        </p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        loadRestaurants();
+    </script>
 </body>
 </html>

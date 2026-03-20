@@ -30,7 +30,21 @@ app.get('/api/saluto', (req, res) => {
   res.json({ messaggio: `Ciao, ${nome}!` });
 });
 
-// Importa le rotte
+// Rotte pagine senza .html
+app.get('/dashboard', (req, res) => {
+  res.sendFile(__dirname + '/public/dashboard.html');
+});
+app.get('/profile', (req, res) => {
+  res.sendFile(__dirname + '/public/profile.html');
+});
+app.get('/register', (req, res) => {
+  res.sendFile(__dirname + '/public/register.html');
+});
+app.get('/restaurants', (req, res) => {
+  res.sendFile(__dirname + '/public/restaurants.html');
+});
+
+// Importa le rotte API
 const routes = require('./routes');
 app.use('/api', routes);
 

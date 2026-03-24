@@ -79,68 +79,36 @@
         </div>
     </section>
 
-    <!-- ============ PIATTI IN EVIDENZA ============ -->
-    <section class="py-5 bg-white">
+    <section class="py-5" id="benvenuto">
         <div class="container">
-            <h2 class="section-title">I più ordinati</h2>
-            <p class="section-subtitle">I piatti preferiti dai nostri clienti</p>
-            <div class="row g-4">
-                <div class="col-sm-6 col-lg-3">
-                    <div class="dish-card card">
-                        <img src="https://images.unsplash.com/photo-1553979459-d2229ba7433b?w=400" alt="Smash Burger">
-                        <div class="card-body">
-                            <h5 class="card-title">Smash Burger</h5>
-                            <p class="dish-desc mb-2">Doppio manzo, cheddar, salsa speciale</p>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span class="dish-price">&euro;8.90</span>
-                                <button class="btn btn-add"><i class="bi bi-plus"></i> Aggiungi</button>
-                            </div>
+            <div class="card bg-transparent border-0 rounded-4 shadow-sm backdrop-blur">
+                <div class="card-body">
+                    <div class="row align-items-center"> 
+                        <div class="col-md-8">
+                            <h2 class="section-title">Benvenuto in SurfShack</h2>
+                            <p class="section-subtitle">
+                                Nato sulle onde del Golfo dei Poeti, SurfShack porta lo spirito della California
+                                anni '80 nel cuore di Lerici. Tavole da surf alle pareti, neon che brillano al
+                                tramonto e il profumo di grigliata che arriva fino alla spiaggia.
+                                <br><br>
+                                Il nostro menu unisce i sapori della cucina ligure con lo street food americano:
+                                burger succosi, poke freschi, fritti croccanti e dolci che ti faranno tornare
+                                indietro nel tempo. Ogni piatto viene preparato con ingredienti locali e tanta
+                                passione per il buon cibo.
+                                <br><br>
+                                Registrati per esplorare i menu dei nostri ristoranti, ordinare online e
+                                ricevere le tue onde di gusto direttamente a casa. Ride the taste!
+                            </p>
+                            <a href="./register" class="btn btn-primary">Registrati</a>
                         </div>
-                    </div>
-                </div>
-                <div class="col-sm-6 col-lg-3">
-                    <div class="dish-card card">
-                        <img src="https://images.unsplash.com/photo-1594007654729-407eedc4be65?w=400" alt="Margherita XL">
-                        <div class="card-body">
-                            <h5 class="card-title">Margherita XL</h5>
-                            <p class="dish-desc mb-2">Pomodoro, mozzarella, basilico fresco</p>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span class="dish-price">&euro;7.50</span>
-                                <button class="btn btn-add"><i class="bi bi-plus"></i> Aggiungi</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-sm-6 col-lg-3">
-                    <div class="dish-card card">
-                        <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400" alt="Poke Salmone">
-                        <div class="card-body">
-                            <h5 class="card-title">Poke Salmone</h5>
-                            <p class="dish-desc mb-2">Salmone, avocado, riso, edamame</p>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span class="dish-price">&euro;11.90</span>
-                                <button class="btn btn-add"><i class="bi bi-plus"></i> Aggiungi</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-sm-6 col-lg-3">
-                    <div class="dish-card card">
-                        <img src="https://images.unsplash.com/photo-1529692236671-f1f6cf9683ba?w=400" alt="Chicken Nuggets">
-                        <div class="card-body">
-                            <h5 class="card-title">Chicken Nuggets</h5>
-                            <p class="dish-desc mb-2">10 pezzi croccanti con salsa BBQ</p>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span class="dish-price">&euro;6.50</span>
-                                <button class="btn btn-add"><i class="bi bi-plus"></i> Aggiungi</button>
-                            </div>
+                        <div class="col-md-4">
+                            <img id="welcomeMealImg" class="img-fluid rounded-4 card-glow" src="" alt="Piatto del giorno">
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </section>
-
     <!-- ============ MODAL LOGIN ============ -->
     <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
@@ -183,6 +151,16 @@
     <!-- Custom JS auth.per controllare se l'utente sta loggato -->
     <script src="/js/auth.js"></script>
     <script>
+        // Ritorna il link casuale a un piatto da meal per immagini casuali nella home
+        function getRandomMealLink() {
+            return fetch('/api/meals/random')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('welcomeMealImg').src = data[0].strMealThumb;
+                })
+                .catch(error => console.error(error)); 
+        }
+        getRandomMealLink();
         // Redirect ristoratore alla dashboard se già loggato
         const token = localStorage.getItem('token');
         if (token) {

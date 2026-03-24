@@ -88,6 +88,10 @@ body {
 }
 
 /* ---- CATEGORIE ---- */
+.card-glow {
+    border: 1px solid rgba(0, 206, 209, 0.3);
+    box-shadow: 0 0 15px rgba(0, 206, 209, 0.15);
+}
 .category-card {
     background: var(--ss-navy-light);
     border-radius: 16px;

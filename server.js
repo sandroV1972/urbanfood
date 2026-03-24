@@ -15,8 +15,10 @@ app.use(cors());
 
 const port = process.env.PORT || 3000; // Usa la porta definita dall'ambiente o 3000 di default
 
-// Connessione al database
+// Connessione al database e seed piatti
+const seedMeals = require('./seed/seed');
 connectDB();
+seedMeals();
 
 // Middleware per parsare il JSON nelle richieste
 app.use(express.json());

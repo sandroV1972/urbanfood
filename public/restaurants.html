@@ -48,8 +48,8 @@
                         <textarea class="form-control" id="description" rows="2"></textarea>
                     </div>
                     <div class="col-12">
-                        <label for="image" class="form-label">URL Immagine</label>
-                        <input type="text" class="form-control" id="image" placeholder="https://...">
+                        <label for="image" class="form-label">Immagine</label>
+                        <input type="file" class="form-control" id="image" accept="image/*">
                     </div>
                     <div class="col-12">
                         <button type="submit" class="btn btn-primary me-2" id="submitBtn">Aggiungi</button>
@@ -142,14 +142,15 @@
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
 
-            const body = {
-                name: document.getElementById('name').value,
-                address: document.getElementById('address').value,
-                phone: document.getElementById('phone').value,
-                piva: document.getElementById('piva').value,
-                description: document.getElementById('description').value,
-                image: document.getElementById('image').value
-            };
+            const formData = new FormData();
+            formData.append('name', document.getElementById('name').value);
+            formData.append('address', document.getElementById('address').value);
+            formData.append('phone', document.getElementById('phone').value);
+            formData.append('piva', document.getElementById('piva').value);
+            formData.append('description', document.getElementById('description').value);
+
+            const imageFile = document.getElementById('image').files[0];
+            if (imageFile) formData.append('image', imageFile);
 
             const isEdit = editId.value !== '';
             const url = isEdit ? `/api/restaurants/${editId.value}` : '/api/restaurants';
@@ -157,11 +158,8 @@
 
             const res = await fetch(url, {
                 method,
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + token
-                },
-                body: JSON.stringify(body)
+                headers: { 'Authorization': 'Bearer ' + token },
+                body: formData
             });
 
             const data = await res.json();
@@ -188,7 +186,7 @@
             document.getElementById('phone').value = r.phone;
             document.getElementById('piva').value = r.piva;
             document.getElementById('description').value = r.description || '';
-            document.getElementById('image').value = r.image || '';
+            // Non si può impostare il valore di un input file via JS
 
             formTitle.textContent = 'Modifica ristorante';
             submitBtn.textContent = 'Salva modifiche';

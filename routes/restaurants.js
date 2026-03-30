@@ -1,6 +1,7 @@
 const router = require('express').Router();
 const Restaurant = require('../models/Restaurant');
 const auth = require('../middleware/auth');
+const upload = require('../middleware/upload');
 
 // GET /api/restaurants - lista ristoranti del ristoratore loggato
 router.get('/', auth, async (req, res) => {
@@ -29,9 +30,10 @@ router.get('/:id', auth, async (req, res) => {
 });
 
 // POST /api/restaurants - crea un nuovo ristorante
-router.post('/', auth, async (req, res) => {
+router.post('/', auth, upload.single('image'), async (req, res) => {
     try {
-        const { name, address, phone, piva, description, image } = req.body;
+        const { name, address, phone, piva, description } = req.body;
+        const image = req.file ? '/uploads/' + req.file.filename : null;
         const restaurant = await Restaurant.create({
             owner: req.user.id,
             name, address, phone, piva, description, image
@@ -44,7 +46,7 @@ router.post('/', auth, async (req, res) => {
 });
 
 // PUT /api/restaurants/:id - modifica un ristorante
-router.put('/:id', auth, async (req, res) => {
+router.put('/:id', auth, upload.single('image'), async (req, res) => {
     try {
         const restaurant = await Restaurant.findById(req.params.id);
         if (!restaurant) return res.status(404).json({ error: 'Ristorante non trovato' });
@@ -52,7 +54,8 @@ router.put('/:id', auth, async (req, res) => {
             return res.status(403).json({ error: 'Non autorizzato' });
         }
 
-        const { name, address, phone, piva, description, image } = req.body;
+        const { name, address, phone, piva, description } = req.body;
+        const image = req.file ? '/uploads/' + req.file.filename : restaurant.image;
         const updated = await Restaurant.findByIdAndUpdate(
             req.params.id,
             { name, address, phone, piva, description, image },

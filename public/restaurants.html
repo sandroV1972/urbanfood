@@ -21,51 +21,63 @@
             <a href="/dashboard" class="btn btn-primary"><i class="bi bi-arrow-left"></i> Dashboard</a>
         </div>
 
-        <!-- Form nuovo ristorante -->
-        <div class="bg-light rounded-4 p-4 mb-4">
-            <h4 class="section-title" id="formTitle">Aggiungi ristorante</h4>
-            <form id="restaurantForm">
-                <input type="hidden" id="editId">
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <label for="name" class="form-label">Nome</label>
-                        <input type="text" class="form-control" id="name" required>
-                    </div>
-                    <div class="col-md-6">
-                        <label for="piva" class="form-label">Partita IVA</label>
-                        <input type="text" class="form-control" id="piva" required>
-                    </div>
-                    <div class="col-md-6">
-                        <label for="address" class="form-label">Indirizzo</label>
-                        <input type="text" class="form-control" id="address" required>
-                    </div>
-                    <div class="col-md-6">
-                        <label for="phone" class="form-label">Telefono</label>
-                        <input type="text" class="form-control" id="phone" required>
-                    </div>
-                    <div class="col-12">
-                        <label for="description" class="form-label">Descrizione</label>
-                        <textarea class="form-control" id="description" rows="2"></textarea>
-                    </div>
-                    <div class="col-12">
-                        <label for="image" class="form-label">Immagine</label>
-                        <input type="file" class="form-control" id="image" accept="image/*">
-                    </div>
-                    <div class="col-12">
-                        <button type="submit" class="btn btn-primary me-2" id="submitBtn">Aggiungi</button>
-                        <button type="button" class="btn btn-secondary d-none" id="cancelBtn">Annulla</button>
-                    </div>
-                </div>
-            </form>
-        </div>
-
         <!-- Lista ristoranti -->
         <div class="bg-white rounded-4 p-4 shadow-sm">
-            <h4 class="section-title">I tuoi ristoranti</h4>
-            <div id="restaurantsList" class="row g-3 mt-2"></div>
+            <div class="d-flex justify-content-between align-items-center">
+                <h4 class="section-title mb-0">Il tuo ristorante</h4>
+                <button class="btn btn-icon-sm" id="addRestaurantBtn" data-bs-toggle="modal" data-bs-target="#restaurantModal"><i class="bi bi-plus"></i></button>
+            </div>
+            <div id="restaurantsList" class="row g-3 mt-3"></div>
             <p id="noRestaurants" class="text-center mt-3 d-none" style="color: var(--ss-gray);">
                 Non hai ancora ristoranti.
             </p>
+        </div>
+    </div>
+
+    <!-- Modale Ristorante (crea/modifica) -->
+    <div class="modal fade" id="restaurantModal" tabindex="-1" aria-labelledby="restaurantModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-xl">
+            <div class="modal-content rounded-4">
+                <div class="modal-header border-0">
+                    <h4 class="modal-title section-title" id="formTitle">Aggiungi ristorante</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Chiudi"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="restaurantForm">
+                        <input type="hidden" id="editId">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="name" class="form-label">Nome</label>
+                                <input type="text" class="form-control" id="name" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="piva" class="form-label">Partita IVA</label>
+                                <input type="text" class="form-control" id="piva" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="address" class="form-label">Indirizzo</label>
+                                <input type="text" class="form-control" id="address" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="phone" class="form-label">Telefono</label>
+                                <input type="text" class="form-control" id="phone" required>
+                            </div>
+                            <div class="col-12">
+                                <label for="description" class="form-label">Descrizione</label>
+                                <textarea class="form-control" id="description" rows="2"></textarea>
+                            </div>
+                            <div class="col-12">
+                                <label for="image" class="form-label">Immagine</label>
+                                <input type="file" class="form-control" id="image" accept="image/*">
+                            </div>
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-primary me-2" id="submitBtn">Aggiungi</button>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="cancelBtn">Annulla</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -101,13 +113,16 @@
             const list = document.getElementById('restaurantsList');
             const noMsg = document.getElementById('noRestaurants');
 
+            const addBtn = document.getElementById('addRestaurantBtn');
             if (restaurants.length === 0) {
                 list.innerHTML = '';
                 noMsg.classList.remove('d-none');
+                addBtn.classList.remove('d-none');
                 return;
             }
 
             noMsg.classList.add('d-none');
+            addBtn.classList.add('d-none');
             list.innerHTML = restaurants.map(r => `
                 <div class="col-md-6">
                     <div class="card p-3" style="background: rgba(0,206,209,0.08); border: 1px solid rgba(0,206,209,0.2); border-radius: 16px;">
@@ -166,7 +181,7 @@
 
             if (res.ok) {
                 showToast(isEdit ? 'Ristorante aggiornato' : 'Ristorante creato');
-                resetForm();
+                bootstrap.Modal.getInstance(modal).hide();
                 loadRestaurants();
             } else {
                 showToast(data.error, false);
@@ -190,8 +205,7 @@
 
             formTitle.textContent = 'Modifica ristorante';
             submitBtn.textContent = 'Salva modifiche';
-            cancelBtn.classList.remove('d-none');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            new bootstrap.Modal(modal).show();
         }
 
         // Cancella ristorante
@@ -219,10 +233,10 @@
             editId.value = '';
             formTitle.textContent = 'Aggiungi ristorante';
             submitBtn.textContent = 'Aggiungi';
-            cancelBtn.classList.add('d-none');
         }
 
-        cancelBtn.addEventListener('click', resetForm);
+        const modal = document.getElementById('restaurantModal');
+        modal.addEventListener('hidden.bs.modal', resetForm);
 
         loadRestaurants();
     </script>

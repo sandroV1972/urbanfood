@@ -18,7 +18,9 @@ router.get('/', auth, async (req, res) => {
 router.get('/:id', auth, async (req, res) => {
     try {
         const restaurant = await Restaurant.findById(req.params.id);
+        const menu = await Restaurant.findById(req.params.id).populate('menu');
         if (!restaurant) return res.status(404).json({ error: 'Ristorante non trovato' });
+        
         if (restaurant.owner.toString() !== req.user.id) {
             return res.status(403).json({ error: 'Non autorizzato' });
         }

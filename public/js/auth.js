@@ -21,6 +21,7 @@ function checkAuth() {
     if (payload.usrType === 'ristoratore') {
         navLinks.innerHTML = `
             <li class="nav-item"><a class="nav-link" href="/dashboard">Dashboard</a></li>
+            <li class="nav-item"><a class="nav-link" href="/restaurants">Ristorante</a></li>
             <li class="nav-item"><a class="nav-link" href="/orders">Ordini</a></li>
             <li class="nav-item"><a class="nav-link" href="/stats">Statistiche</a></li>
         `;

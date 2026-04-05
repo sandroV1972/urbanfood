@@ -11,4 +11,14 @@ router.get('/random', async (req, res) => {
     }
 });
 
+router.get('/', async (req, res) => {
+    try {
+        const meals = await Meal.find();
+        res.json(meals);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Errore nel recupero dei piatti' });
+    }
+});
+
 module.exports = router;

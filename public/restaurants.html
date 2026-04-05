@@ -3,36 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SurfShack - Gestione Ristoranti</title>
+    <title>SurfShack - Gestione Ristorante</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="/css/style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+<style>
+    .meal-checkbox:checked + .meal-card {
+        border-color: var(--ss-sand) !important;
+        box-shadow: 0 0 0 3px rgba(0,206,209,0.3);
+    }
+    .meal-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+</style>
 </head>
 <body>
     <div id="navbar"></div>
 
     <div class="container py-5">
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 class="section-title mb-0">Gestione Ristoranti</h2>
+            <h2 class="section-title mb-0">Gestione Ristorante</h2>
             <a href="/dashboard" class="btn btn-primary"><i class="bi bi-arrow-left"></i> Dashboard</a>
         </div>
 
         <!-- Lista ristoranti -->
-        <div class="bg-white rounded-4 p-4 shadow-sm">
+        <div class="bg-white rounded-4 p-4 shadow-sm mb-4">
             <div class="d-flex justify-content-between align-items-center">
                 <h4 class="section-title mb-0">Il tuo ristorante</h4>
                 <button class="btn btn-icon-sm" id="addRestaurantBtn" data-bs-toggle="modal" data-bs-target="#restaurantModal"><i class="bi bi-plus"></i></button>
             </div>
-            <div id="restaurantsList" class="row g-3 mt-3"></div>
+            <div id="restaurant" class="row g-3 mt-3"></div>
             <p id="noRestaurants" class="text-center mt-3 d-none" style="color: var(--ss-gray);">
-                Non hai ancora ristoranti.
+                Non hai ancora un ristorante.
             </p>
+        </div>  
+        <!-- Menu -->
+        <div class="bg-white rounded-4 p-4 shadow-sm">
+            <div class="d-flex justify-content-between align-items-center">
+                <h4 class="section-title mb-0">Il tuo menu</h4>
+                <button class="btn btn-icon-sm" id="addMenuBtn" data-bs-toggle="modal" data-bs-target="#menuModal"><i class="bi bi-plus"></i></button>
+            </div>
+            <div id="menuList" class="row g-3 mt-3"></div>
         </div>
-    </div>
+
+    </div>  
 
     <!-- Modale Ristorante (crea/modifica) -->
     <div class="modal fade" id="restaurantModal" tabindex="-1" aria-labelledby="restaurantModalLabel" aria-hidden="true">
@@ -71,7 +90,7 @@
                                 <input type="file" class="form-control" id="image" accept="image/*">
                             </div>
                             <div class="col-12">
-                                <button type="submit" class="btn btn-primary me-2" id="submitBtn">Aggiungi</button>
+                                 <button type="submit" class="btn btn-primary me-1" id="submitBtn">Aggiungi</button>
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="cancelBtn">Annulla</button>
                             </div>
                         </div>
@@ -80,6 +99,99 @@
             </div>
         </div>
     </div>
+
+    <!-- Modale Crea Piatto -->
+    <div class="modal fade" id="createMealModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content rounded-4">
+                <div class="modal-header border-0">
+                    <h4 class="modal-title section-title">Crea nuovo piatto</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="createMealForm">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="mealName" class="form-label">Nome *</label>
+                                <input type="text" class="form-control" id="mealName" required>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="mealCategory" class="form-label">Categoria</label>
+                                <input type="text" class="form-control" id="mealCategory">
+                            </div>
+                            <div class="col-md-3">
+                                <label for="mealArea" class="form-label">Cucina</label>
+                                <input type="text" class="form-control" id="mealArea" placeholder="es. Italian">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="mealPrice" class="form-label">Prezzo *</label>
+                                <input type="number" class="form-control" id="mealPrice" step="0.01" min="0" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="mealTags" class="form-label">Tags</label>
+                                <input type="text" class="form-control" id="mealTags" placeholder="es. Pasta, Light">
+                            </div>
+                            <div class="col-12">
+                                <label for="mealInstructions" class="form-label">Preparazione</label>
+                                <textarea class="form-control" id="mealInstructions" rows="2"></textarea>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="mealIngredients" class="form-label">Ingredienti</label>
+                                <textarea class="form-control" id="mealIngredients" rows="2" placeholder="Uno per riga"></textarea>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="mealMeasures" class="form-label">Dosi</label>
+                                <textarea class="form-control" id="mealMeasures" rows="2" placeholder="Uno per riga"></textarea>
+                            </div>
+                            <div class="col-12">
+                                <label for="mealImage" class="form-label">Immagine</label>
+                                <input type="file" class="form-control" id="mealImage" accept="image/*">
+                            </div>
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-primary">Crea</button>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Modale MenuItem (aggiungi) -->
+    <div class="modal fade" id="menuModal" tabindex="-1" aria-labelledby="menuModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content rounded-4" style="max-height: 80vh; display: flex; flex-direction: column;">
+            <div class="modal-header border-0">
+                <div class="w-100">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h4 class="modal-title section-title" id="menuModalLabel">Aggiungi piatto</h4>
+                            <p class="mb-0" style="font-size: 0.85rem; font-weight: 400; color: var(--ss-gray);">
+                                Seleziona i piatti dal catalogo da aggiungere al tuo menu
+                            </p>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <button class="btn btn-secondary" id="createMeal">Crea</button>
+                            <button class="btn btn-secondary" id="addSelectedMeals">Aggiungi</button>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Chiudi"></button>
+                        </div>
+                    </div>
+                    <div class="mt-3 d-flex gap-2">
+                        <select class="form-select" id="categoryFilter" style="width: 50%;">
+                            <option value="">Tutte le categorie</option>
+                        </select>
+                        <input type="text" class="form-control" id="mealSearch" placeholder="Cerca per nome..." style="width: 50%;">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-body" style="overflow-y: auto; flex: 1;">
+                <div id="mealsList" class="row g-3"></div>
+            </div>
+        </div>
+    </div>
+</div>
 
     <div class="toast-container position-fixed top-0 end-0 p-3">
         <div id="toastMessage" class="toast align-items-center border-0" role="alert">
@@ -92,6 +204,8 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/js/auth.js"></script>
     <script>
+        let allMeals = [];
+
         const token = localStorage.getItem('token');
         if (!token) window.location.href = '/';
 
@@ -104,18 +218,25 @@
         const submitBtn = document.getElementById('submitBtn');
         const cancelBtn = document.getElementById('cancelBtn');
 
-        // Carica lista ristoranti
-        async function loadRestaurants() {
+        // Pre carica del catalogo Meals
+        async function preloadMeals() {
+            const res = await fetch('/api/meals', {
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            allMeals = await res.json();
+        }
+        // Carica il ristorante
+        async function loadRestaurant() {
             const res = await fetch('/api/restaurants', {
                 headers: { 'Authorization': 'Bearer ' + token }
             });
-            const restaurants = await res.json();
-            const list = document.getElementById('restaurantsList');
+            const restaurant = await res.json();
+            const container = document.getElementById('restaurant');
             const noMsg = document.getElementById('noRestaurants');
-
             const addBtn = document.getElementById('addRestaurantBtn');
-            if (restaurants.length === 0) {
-                list.innerHTML = '';
+
+            if (restaurant.length === 0) {
+                container.innerHTML = '';
                 noMsg.classList.remove('d-none');
                 addBtn.classList.remove('d-none');
                 return;
@@ -123,8 +244,9 @@
 
             noMsg.classList.add('d-none');
             addBtn.classList.add('d-none');
-            list.innerHTML = restaurants.map(r => `
-                <div class="col-md-6">
+            const r = restaurant[0];
+            container.innerHTML = `
+                <div class="col-12">
                     <div class="card p-3" style="background: rgba(0,206,209,0.08); border: 1px solid rgba(0,206,209,0.2); border-radius: 16px;">
                         <div class="d-flex justify-content-between align-items-start">
                             <div>
@@ -150,8 +272,100 @@
                         </div>
                     </div>
                 </div>
-            `).join('');
+            `;
         }
+
+        async function loadMenu() {
+            const res = await fetch('/api/menu-items', {
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            const menu = await res.json();
+            const container = document.getElementById('menuList');
+            const addBtn = document.getElementById('addMenuBtn');
+            container.innerHTML = '';
+
+            if (menu.length === 0) {
+                return;
+            }
+
+            menu.forEach(m => {
+                container.innerHTML += `
+                    <div class="col-12">
+                        <div class="card p-3" style="background: rgba(0,206,209,0.08); border: 1px solid rgba(0,206,209,0.2); border-radius: 16px;">
+                            <div class="d-flex align-items-center gap-3">
+                                <img src="${m.strMealThumb}" alt="${m.strMeal}" class="rounded-3" style="width: 80px; height: 80px; object-fit: cover;">
+                                <div class="flex-grow-1">
+                                    <h5 class="mb-1" style="color: var(--ss-sand); font-family: 'Permanent Marker', cursive;">${m.strMeal}</h5>
+                                    <p class="mb-0" style="color: var(--ss-gray); font-size: 0.9rem;">
+                                        ${m.strCategory}
+                                    </p>
+                                    <p class="mb-0 fw-bold" style="color: var(--ss-sand);">&euro; ${m.price.toFixed(2)}</p>
+                                </div>
+                                <button class="btn btn-sm btn-primary" onclick="editMenuItem('${m._id}')">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+        }
+        // Carica i piatti standard da aggiungere al menu (carica da Meals)
+        async function loadMealsCatalog() {
+
+            const container = document.getElementById('mealsList');
+            const categoryFilter = document.getElementById('categoryFilter');
+            const searchInput = document.getElementById('mealSearch');
+
+            // Recupera i piatti già nel menu per escluderli
+            const menuRes = await fetch('/api/menu-items', {
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            const menuItems = await menuRes.json();
+            const addedMealIds = new Set(menuItems.map(mi => mi.idMeal));
+
+            // Popola dropdown categorie (solo la prima volta)
+            if (categoryFilter.options.length <= 1) {
+                const categories = [...new Set(allMeals.map(m => m.strCategory).filter(Boolean))];
+                categories.sort();
+                categories.forEach(cat => {
+                    categoryFilter.innerHTML += `<option value="${cat}">${cat}</option>`;
+                });
+            }
+
+            function renderMeals() {
+                const catFilter = categoryFilter.value;
+                const nameFilter = searchInput.value.toLowerCase();
+                const filtered = allMeals.filter(m => {
+                    const matchCat = !catFilter || m.strCategory === catFilter;
+                    const matchName = !nameFilter || m.strMeal.toLowerCase().includes(nameFilter);
+                    const notAdded = !addedMealIds.has(m.idMeal);
+                    return matchCat && matchName && notAdded;
+                });
+        container.innerHTML = '';
+        filtered.forEach(m => {
+            container.innerHTML += `
+                <div class="col-md-4">
+                    <label for="meal_${m._id}" class="w-100" style="cursor: pointer;">
+                        <input type="checkbox" value="${m._id}" id="meal_${m._id}" class="d-none meal-checkbox">
+                        <div class="card p-0 overflow-hidden meal-card" style="background: rgba(0,206,209,0.08); border: 2px solid rgba(0,206,209,0.2); border-radius: 16px; transition: all 0.2s;">
+                            <img class="w-100" src="${m.strMealThumb}" alt="${m.strMeal}" style="height: 160px; object-fit: cover;">
+                            <div class="p-3">
+                                <h6 class="mb-1" style="color: var(--ss-sand); font-family: 'Permanent Marker', cursive;">${m.strMeal}</h6>
+                                <p class="mb-0" style="color: var(--ss-gray); font-size: 0.85rem;">${m.strCategory}</p>
+                            </div>
+                        </div>
+                    </label>
+                </div>
+            `;
+        });
+    }
+
+    renderMeals();
+    categoryFilter.onchange = renderMeals;
+    searchInput.oninput = renderMeals;
+}
 
         // Submit form (crea o modifica)
         form.addEventListener('submit', async (e) => {
@@ -182,7 +396,7 @@
             if (res.ok) {
                 showToast(isEdit ? 'Ristorante aggiornato' : 'Ristorante creato');
                 bootstrap.Modal.getInstance(modal).hide();
-                loadRestaurants();
+                loadRestaurant();
             } else {
                 showToast(data.error, false);
             }
@@ -221,7 +435,7 @@
 
             if (res.ok) {
                 showToast('Ristorante cancellato');
-                loadRestaurants();
+                loadRestaurant();
             } else {
                 showToast(data.error, false);
             }
@@ -238,7 +452,90 @@
         const modal = document.getElementById('restaurantModal');
         modal.addEventListener('hidden.bs.modal', resetForm);
 
-        loadRestaurants();
+        loadRestaurant();
+        loadMenu();
+        preloadMeals(); // scarica i meals in background
+
+        // Quando si apre la modale menu, carica il catalogo Meals
+        document.getElementById('menuModal').addEventListener('shown.bs.modal', loadMealsCatalog);
+
+        // Aggiungi piatto al menu listener
+        document.getElementById('addSelectedMeals').addEventListener('click', async () => {
+            const checked = document.querySelectorAll('#mealsList input[type="checkbox"]:checked');
+            const mealIds = [...checked].map(cb => cb.value);
+
+            if (mealIds.length === 0) {
+                showToast('Seleziona almeno un piatto', false);
+                return;
+            }
+
+            const res = await fetch('/api/menu-items/from-catalog', {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + token,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ mealIds })
+            });
+
+            if (res.ok) {
+                showToast('Piatti aggiunti al menu');
+                bootstrap.Modal.getInstance(document.getElementById('menuModal')).hide();
+                loadMenu();
+            } else {
+                const data = await res.json();
+                showToast(data.error, false);
+            }
+        });
+
+        // Crea nuovo piatto listener
+        document.getElementById('createMeal').addEventListener('click', () => {
+            bootstrap.Modal.getInstance(document.getElementById('menuModal')).hide();
+            new bootstrap.Modal(document.getElementById('createMealModal')).show();    
+        });
+
+        document.getElementById('createMealForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const formData = new FormData();
+            formData.append('strMeal', document.getElementById('mealName').value);
+            formData.append('strCategory', document.getElementById('mealCategory').value);
+            formData.append('strArea', document.getElementById('mealArea').value);
+            formData.append('price', document.getElementById('mealPrice').value);
+            formData.append('strTags', document.getElementById('mealTags').value);
+            formData.append('strInstructions', document.getElementById('mealInstructions').value);
+            formData.append('ingredients', document.getElementById('mealIngredients').value);
+            formData.append('measures', document.getElementById('mealMeasures').value);
+
+            const mealImageFile = document.getElementById('mealImage').files[0];
+            if (mealImageFile) formData.append('image', mealImageFile);
+
+            const res = await fetch('/api/menu-items', {
+                method: 'POST',
+                headers: { 'Authorization': 'Bearer ' + token },
+                body: formData
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                showToast('Piatto creato');
+                bootstrap.Modal.getInstance(document.getElementById('createMealModal')).hide();
+                window.location.reload();
+            } else {
+                showToast(data.error, false);
+            }
+        });
+
+        // Se arrivo da /restaurants/:id?edit=true, apro la modale in modifica
+        const params = new URLSearchParams(window.location.search);
+        const editMode = params.get('edit') === 'true';
+        const pathParts = window.location.pathname.split('/');
+        const restaurantIdFromUrl = pathParts[pathParts.length - 1];
+
+        if (editMode && restaurantIdFromUrl && restaurantIdFromUrl !== 'restaurants') {
+            editRestaurant(restaurantIdFromUrl);
+        }
     </script>
 </body>
 </html>

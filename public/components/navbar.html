@@ -1,5 +1,5 @@
 <!-- ============ NAVBAR ============ -->
-    <nav class="navbar navbar-expand-lg sticky-top">
+    <nav class="navbar navbar-expand-lg">
         <div class="container">
             <a class="navbar-brand" href="/">
                 <i class="fa-solid fa-water"></i> SurfShack
@@ -17,3 +17,37 @@
             </div>
         </div>
     </nav>
+    <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="loginModalLabel">Accedi a SurfShack</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Chiudi"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="mb-3">
+                            <label for="loginEmail" class="form-label fw-semibold">Email</label>
+                            <input type="email" class="form-control" id="loginEmail" placeholder="nome@email.com" required>
+                        </div>
+                        <div class="mb-4">
+                            <label for="loginPassword" class="form-label fw-semibold">Password</label>
+                            <input type="password" class="form-control" id="loginPassword" placeholder="La tua password" required>
+                        </div>
+                        <button type="submit" class="btn btn-accedi mb-3">Accedi</button>
+                        <p class="text-center mb-0">
+                            Non hai un account? <a href="/register" class="link-registrati">Registrati</a>
+                        </p>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="toast-container position-fixed top-0 end-0 p-3">
+            <div id="toastMessage" class="toast align-items-center border-0" role="alert">
+                <div class="d-flex">
+                    <div class="toast-body"></div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            </div>
+        </div>

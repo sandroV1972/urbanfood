@@ -76,6 +76,14 @@
                     </div>
                 </div>
             </div>
+            <div class="mt-4">
+                <h2 class="section-title">Esplora i Ristoranti</h2>
+                <p class="section-subtitle">Scegli uno dei nostri ristoranti</p>
+                <div class="row g-4">
+                    <!--- lista dei ristoranti --> 
+                    <div id="restaurants"></div>
+                </div>
+            </div>
         </div>
     </section>
 
@@ -109,41 +117,7 @@
             </div>
         </div>
     </section>
-    <!-- ============ MODAL LOGIN ============ -->
-    <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="loginModalLabel">Accedi a SurfShack</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Chiudi"></button>
-                </div>
-                <div class="modal-body">
-                    <form>
-                        <div class="mb-3">
-                            <label for="loginEmail" class="form-label fw-semibold">Email</label>
-                            <input type="email" class="form-control" id="loginEmail" placeholder="nome@email.com" required>
-                        </div>
-                        <div class="mb-4">
-                            <label for="loginPassword" class="form-label fw-semibold">Password</label>
-                            <input type="password" class="form-control" id="loginPassword" placeholder="La tua password" required>
-                        </div>
-                        <button type="submit" class="btn btn-accedi mb-3">Accedi</button>
-                        <p class="text-center mb-0">
-                            Non hai un account? <a href="/register" class="link-registrati">Registrati</a>
-                        </p>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-<div class="toast-container position-fixed top-0 end-0 p-3">
-    <div id="toastMessage" class="toast align-items-center border-0" role="alert">
-        <div class="d-flex">
-            <div class="toast-body"></div>
-            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-        </div>
-    </div>
-</div>
+ 
     <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <!-- Bootstrap 5 JS -->
@@ -160,7 +134,31 @@
                 })
                 .catch(error => console.error(error)); 
         }
+        function loadRestaurants() {
+            return fetch('/api/restaurants')
+                .then(response => response.json())
+                .then(data => {
+                    const restaurantsContainer = document.getElementById('restaurants');
+                    data.forEach(restaurant => {
+                        const restaurantCard = document.createElement('div');
+                        restaurantCard.classList.add('col-6', 'col-md-4', 'col-lg-3', 'mb-4');
+                        restaurantCard.innerHTML = `
+                        <a href="/restaurant-order/${restaurant._id}" class="text-decoration-none">
+                            <div class="restaurant-card card h-100">
+                                <img src="${restaurant.image}" class="card-img-top" alt="${restaurant.name}">
+                                <div class="card-body">
+                                    <h5 class="card-title">${restaurant.name}</h5>
+                                    <p class="card-text">${restaurant.address}</p>
+                                </div>
+                            </div>
+                        </a>
+                        `;
+                        restaurantsContainer.appendChild(restaurantCard);
+                    });
+                })
+        }
         getRandomMealLink();
+        loadRestaurants();
         // Redirect ristoratore alla dashboard se già loggato
         const token = localStorage.getItem('token');
         if (token) {
@@ -169,32 +167,6 @@
                 window.location.href = '/dashboard';
             }
         }
-
-        document.getElementById('loginModal').querySelector('form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-
-            const email = document.getElementById('loginEmail').value;
-            const password = document.getElementById('loginPassword').value;
-
-            const res = await fetch('/api/auth/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password })
-            });
-
-            const data = await res.json();
-
-            if (res.ok) {
-                localStorage.setItem('token', data.token);
-                  if (data.user.usrType === 'ristoratore') {
-                        window.location.href = '/dashboard';
-                    } else {
-                        window.location.reload();
-                    }
-            } else {
-                showToast(data.error, false);
-            }
-        });
 
     </script>
 

@@ -33,11 +33,82 @@
                         <label for="email" class="form-label">Email</label>
                         <input type="email" class="form-control" id="email">
                     </div>
+                    <h5 class="mt-4">Indirizzo</h5>
+                    <div class="mb-3">
+                        <label for="street" class="form-label">Strada</label>
+                        <input type="text" class="form-control" id="street">
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="city" class="form-label">Città</label>
+                                <input type="text" class="form-control" id="city">
+                            </div>
+                        </div>    
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="zip" class="form-label">CAP</label>
+                                <input type="text" class="form-control" id="zip">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="country" class="form-label">Paese</label>
+                                <input type="text" class="form-control" id="country">
+                            </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="phone" class="form-label">Telefono</label>
+                            <input type="text" class="form-control" id="phone">
+                        </div>
+                    </div>  
+                    </div>    
+                                    <h5 class="mt-4">Preferenze</h5>
+                <div class="mb-3">
+                    <label for="cuisineType" class="form-label">Cucina preferita</label>
+                    <select class="form-select" id="cuisineType" multiple>
+                        <option value="italiana">Italiana</option>
+                        <option value="giapponese">Giapponese</option>
+                        <option value="messicana">Messicana</option>
+                        <option value="cinese">Cinese</option>
+                        <option value="indiana">Indiana</option>
+                    </select>
+                    <small class="text-muted">Tieni premuto Ctrl/Cmd per selezionare più opzioni</small>
+                </div>
+                <div class="form-check mb-3">
+                    <input type="checkbox" class="form-check-input" id="showOffers">
+                    <label class="form-check-label" for="showOffers">Mostra offerte speciali</label>
+                </div>
+                    <hr class="my-4">
                     <button type="submit" class="btn btn-primary">Salva modifiche</button>
                 </form>
 
                 <hr class="my-4">
 
+                <h2 class="section-title">Carta di Credito</h2>
+                <form id="creditCardForm">
+                    <div class="mb-3">
+                        <label for="cardHolder" class="form-label">Titolare</label>
+                        <input type="text" class="form-control" id="cardHolder">
+                    </div>
+                    <div class="mb-3">
+                        <label for="cardNumber" class="form-label">Numero di carta</label>
+                        <input type="text" class="form-control" id="cardNumber">
+                    </div>
+                    <div class="mb-3">
+                        <label for="expirationDate" class="form-label">Data di scadenza</label>
+                        <input type="text" class="form-control" id="expirationDate">
+                    </div>
+                    <div class="mb-3">
+                        <label for="cvv" class="form-label">CVV</label>
+                        <input type="text" class="form-control" id="cvv">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Salva modifiche</button>
+                </form>
+
+
+                <hr class="my-4">
                 <h5>Cambia password</h5>
                 <form id="passwordForm">
                     <div class="mb-3">
@@ -81,8 +152,34 @@
 
         // Pre-compila i campi dal token
         const payload = JSON.parse(atob(token.split('.')[1]));
-        document.getElementById('name').value = payload.name;
-        document.getElementById('email').value = payload.email;
+
+        fetch('/api/auth/profile', {
+            headers: { 'Authorization': 'Bearer ' + token }
+        })
+        .then(r => r.json())
+        .then(user => {
+            document.getElementById('name').value = user.name || '';
+            document.getElementById('email').value = user.email || '';
+            // Indirizzo
+            document.getElementById('street').value = user.address?.street || '';
+            document.getElementById('city').value = user.address?.city || '';
+            document.getElementById('country').value = user.address?.country || '';
+            document.getElementById('zip').value = user.address?.zip || '';
+            document.getElementById('phone').value = user.address?.phone || '';
+            // Carta
+            document.getElementById('cardHolder').value = user.credit_card?.holder || '';
+            document.getElementById('cardNumber').value = user.credit_card?.number || '';
+            document.getElementById('expirationDate').value = user.credit_card?.expiration || '';
+            document.getElementById('cvv').value = user.credit_card?.cvv || '';
+            // Preferenze
+            document.getElementById('showOffers').checked = user.preferenze?.offerte || false;
+            const select = document.getElementById('cuisineType');
+            (user.preferenze?.cucina || []).forEach(c => {
+                const opt = select.querySelector(`option[value="${c}"]`);
+                if (opt) opt.selected = true;
+            });
+        });
+
 
         // Form modifica profilo
         document.getElementById('profileForm').addEventListener('submit', async (e) => {
@@ -90,6 +187,19 @@
 
             const name = document.getElementById('name').value;
             const email = document.getElementById('email').value;
+            // indirizzo
+            const street = document.getElementById('street').value;
+            const city = document.getElementById('city').value;
+            const country = document.getElementById('country').value;
+            const zip = document.getElementById('zip').value;
+            const phone = document.getElementById('phone').value;
+            //carta di credito
+            const cardNumber = document.getElementById('cardNumber').value;
+            const expirationDate = document.getElementById('expirationDate').value;
+            const cvv = document.getElementById('cvv').value;
+            // Preferenze
+            const showOffers = document.getElementById('showOffers').checked;
+            const cuisineType = Array.from(document.querySelectorAll('#cuisineType option:checked')).map(o => o.value);
 
             const res = await fetch('/api/auth/profile', {
                 method: 'PUT',
@@ -97,7 +207,25 @@
                     'Content-Type': 'application/json',
                     'Authorization': 'Bearer ' + token
                 },
-                body: JSON.stringify({ name, email })
+                body: JSON.stringify({ name, email,
+                    address: {
+                        street: document.getElementById('street').value,
+                        city: document.getElementById('city').value,    
+                        country: document.getElementById('country').value,
+                        zip: document.getElementById('zip').value,
+                        phone: document.getElementById('phone').value
+                    },
+                    credit_card: {
+                        holder: document.getElementById('cardHolder').value,
+                        number: document.getElementById('cardNumber').value,
+                        expiration: document.getElementById('expirationDate').value,
+                        cvv: document.getElementById('cvv').value
+                    },
+                    preferenze: {
+                        cucina: Array.from(document.getElementById('cuisineType').selectedOptions).map(o => o.value),
+                        offerte: document.getElementById('showOffers').checked
+                    }
+                 })
             });
 
             const data = await res.json();
@@ -111,6 +239,39 @@
             }
         });
 
+        // Form carta di credito
+        document.getElementById('creditCardForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const cardHolder = document.getElementById('cardHolder').value;
+            const cardNumber = document.getElementById('cardNumber').value;
+            const expirationDate = document.getElementById('expirationDate').value;
+            const cvv = document.getElementById('cvv').value;
+
+            const res = await fetch('/api/auth/profile', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + token
+                },
+                body: JSON.stringify({ 
+                    credit_card: { 
+                        holder: cardHolder, 
+                        number: cardNumber, 
+                        expiration: expirationDate, 
+                        cvv: cvv 
+                    }
+                })
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                showToast('Carta aggiornata');
+                window.location.reload();
+            } else {
+                showToast(data.error, false);
+            }
+        })
         // Form cambio password
         document.getElementById('passwordForm').addEventListener('submit', async (e) => {
             e.preventDefault();

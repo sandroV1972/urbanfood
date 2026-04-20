@@ -5,6 +5,34 @@ function initPage() {
         .then(html => {
             document.getElementById('navbar').innerHTML = html;
             checkAuth();
+            const nav = document.querySelector('nav.navbar');
+            const altezza = nav.offsetHeight;
+            document.documentElement.style.setProperty('--navbar-height', altezza + 'px');
+            document.getElementById('loginModal').querySelector('form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            const res = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                localStorage.setItem('token', data.token);
+                  if (data.user.usrType === 'ristoratore') {
+                        window.location.href = '/dashboard';
+                    } else {
+                        window.location.reload();
+                    }
+            } else {
+                showToast(data.error, false);
+            }
+        });
         });
 
 }
@@ -41,6 +69,7 @@ function checkAuth() {
     btn.removeAttribute('data-bs-target');
     btn.onclick = () => {
         localStorage.removeItem('token');
+        localStorage.removeItem('cart');
         window.location.reload();
     };
 }

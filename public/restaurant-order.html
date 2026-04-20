@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SurfShack - Ristorante</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+</head>
+<body>
+    <button class="cart-handle" data-bs-toggle="offcanvas" data-bs-target="#cartOffcanvas">
+        <i class="bi bi-cart"></i>
+        <span class="badge bg-danger cart-badge" id="cartCount">0</span>
+    </button>
+    <div id="navbar"></div>
+
+    <div class="container py-5">
+        <!-- Info ristorante -->
+        <div class="row mb-5">
+            <div class="col-md-6">
+                <img id="restaurantImage" src="" alt="" class="img-fluid rounded" style="max-height: 350px; width: 100%; object-fit: cover;">
+                <h2 id="restaurantName" class="section-title mt-3"></h2>
+                <p id="restaurantDescription" class="text-muted"></p>
+                <p><i class="bi bi-geo-alt"></i> <span id="restaurantAddress"></span></p>
+                <p><i class="bi bi-telephone"></i> <span id="restaurantPhone"></span></p>
+            </div>
+            <div class="col-md-6">
+                <div id="map" style="width: 100%; height: 350px; border-radius: 16px; border: 1px solid rgba(0,206,209,0.15);"></div>
+            </div>
+        </div>
+
+        <!-- Menu -->
+        <h2 class="section-title">Menu</h2>
+        <div class="row g-4" id="menuContainer"></div>
+    </div>
+
+    <!-- Modale dettaglio piatto -->
+    <div class="modal fade" id="itemModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="itemModalTitle"></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <img id="itemModalImage" src="" alt="" class="img-fluid rounded mb-3" style="max-height: 280px; object-fit: cover;">
+                    <p id="itemModalCategory" class="text-muted mb-2"></p>
+                    <p id="itemModalPrice" class="item-price mb-3"></p>
+                    <div class="qty-control mx-auto">
+                        <button class="qty-btn" onclick="changeModalQty(-1)">-</button>
+                        <span class="qty-value" id="itemModalQty">1</span>
+                        <button class="qty-btn" onclick="changeModalQty(1)">+</button>
+                    </div>
+                </div>
+                <div class="modal-footer justify-content-center">
+                    <button class="btn-add" onclick="addToCartFromModal()">
+                        <i class="bi bi-cart-plus me-1"></i> Aggiungi al carrello
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="cartOffcanvas" aria-labelledby="cartOffcanvasLabel">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="cartOffcanvasLabel">Carrello</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body">
+            <div id="cartContainer"></div>
+            <hr>
+            <div class="d-flex justify-content-between fw-bold">
+                <span>Totale:</span>
+                <span id="cartTotal">€0.00</span>
+            </div>
+            <button class="btn-add w-100 mt-3" onclick="checkout()">Conferma ordine</button>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/auth.js"></script>
+    <script>
+        const restaurantId = window.location.pathname.split('/').pop();
+        const token = localStorage.getItem('token');
+
+        // Se non loggato nascondi cart
+        if (!token) document.querySelector('.cart-handle').style.display = 'none';
+        document.getElementById('cartOffcanvas').addEventListener('show.bs.offcanvas', renderCart);
+
+        // Carica info ristorante
+        fetch(`/api/restaurants/order/${restaurantId}`)
+            .then(r => r.json())
+            .then(restaurant => {
+                document.getElementById('restaurantName').textContent = restaurant.name;
+                document.getElementById('restaurantDescription').textContent = restaurant.description || '';
+                document.getElementById('restaurantAddress').textContent = restaurant.address;
+                document.getElementById('restaurantPhone').textContent = restaurant.phone;
+                document.getElementById('restaurantImage').src = restaurant.image;
+                document.getElementById('restaurantImage').alt = restaurant.name;
+
+                // Mappa con OpenStreetMap
+                const mapDiv = document.getElementById('map');
+                const encoded = encodeURIComponent(restaurant.address);
+
+                // Geocoding con Nominatim per ottenere le coordinate
+                fetch(`https://nominatim.openstreetmap.org/search?q=${encoded}&format=json&limit=1`)
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.length > 0) {
+                            const lat = data[0].lat;
+                            const lon = data[0].lon;
+                            const bbox = `${lon-0.005},${lat-0.005},${Number(lon)+0.005},${Number(lat)+0.005}`;
+                            mapDiv.innerHTML = `<iframe width="100%" height="100%" style="border:0; border-radius:16px;"
+                                loading="lazy"
+                                src="https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${lat},${lon}">
+                            </iframe>`;
+                        } else {
+                            mapDiv.innerHTML = '<p class="text-center mt-5">Mappa non disponibile</p>';
+                        }
+                    });
+            });
+
+        // Carica menu
+        const itemsMap = {};
+        let modalItemId = null;
+        let modalQty = 1;
+
+        fetch(`/api/menu-items/restaurant/${restaurantId}`)
+            .then(r => r.json())
+            .then(items => {
+                const container = document.getElementById('menuContainer');
+                items.forEach(item => {
+                    itemsMap[item._id] = item;
+                    const col = document.createElement('div');
+                    col.classList.add('col-6', 'col-md-4', 'col-lg-3');
+                    col.innerHTML = `
+                        <div class="restaurant-card card h-100">
+                            <img src="${item.strMealThumb}" class="card-img-top" alt="${item.strMeal}">
+                            <div class="card-body">
+                                <h5 class="card-title">${item.strMeal}</h5>
+                                <p class="card-text">${item.strCategory || ''}</p>
+                                <p class="card-text fw-bold" style="color: var(--ss-teal);">€${item.price.toFixed(2)}</p>
+                                ${token ? `
+                                <button class="btn-cart-add mt-2" onclick="openItemModal('${item._id}')">
+                                    <i class="bi bi-cart-plus"></i>
+                                </button>` : ''}
+                            </div>
+                        </div>
+                    `;
+                    container.appendChild(col);
+                });
+            });
+
+        function openItemModal(id) {
+            const item = itemsMap[id];
+            modalItemId = id;
+            modalQty = 1;
+            document.getElementById('itemModalTitle').textContent = item.strMeal;
+            document.getElementById('itemModalImage').src = item.strMealThumb;
+            document.getElementById('itemModalImage').alt = item.strMeal;
+            document.getElementById('itemModalCategory').textContent = item.strCategory || '';
+            document.getElementById('itemModalPrice').textContent = `€${item.price.toFixed(2)}`;
+            document.getElementById('itemModalQty').textContent = modalQty;
+            new bootstrap.Modal(document.getElementById('itemModal')).show();
+        }
+
+        function changeModalQty(delta) {
+            modalQty = Math.max(1, modalQty + delta);
+            document.getElementById('itemModalQty').textContent = modalQty;
+        }
+
+        function addToCartFromModal() {
+            const cart = JSON.parse(localStorage.getItem('cart')) || [];
+            const idx = cart.findIndex(i => i.id === modalItemId);
+            if (idx !== -1) {
+                cart[idx].quantity += modalQty;
+            } else {
+                cart.push({ id: modalItemId, quantity: modalQty });
+            }
+            localStorage.setItem('cart', JSON.stringify(cart));
+            updateCartBadge();
+            bootstrap.Modal.getInstance(document.getElementById('itemModal')).hide();
+        }
+
+        function updateCartBadge() {
+            const cart = JSON.parse(localStorage.getItem('cart')) || [];
+            const total = cart.reduce((sum, i) => sum + i.quantity, 0);
+            document.getElementById('cartCount').textContent = total;
+        }
+        function renderCart() {
+            const cartItems = JSON.parse(localStorage.getItem('cart')) || [];
+            const container = document.getElementById('cartContainer');
+            container.innerHTML = '';
+            if (cartItems.length === 0) {
+                container.innerHTML = '<p class="text-center mt-5">Il tuo carrello è vuoto</p>';
+                return;
+            } else { 
+                cartItems.forEach(item => {
+                    const cartItem = itemsMap[item.id];
+                    const col = document.createElement('div');
+                    col.classList.add('col-12', 'col-md-6', 'col-lg-4');
+                    col.innerHTML = `
+                        <div class="cart-card card h-100">
+                            <img src="${cartItem.strMealThumb}" class="card-img-top" alt="${cartItem.strMeal}">
+                            <div class="card-body">
+                                <h5 class="card-title">${cartItem.strMeal}</h5>
+                                <p class="card-text">${cartItem.strCategory || ''}</p>
+                                <p class="card-text fw-bold" style="color: var(--ss-teal);">€${cartItem.price.toFixed(2)}</p>
+                                <p class="card-text">Quantità: ${item.quantity}</p>
+                            </div>
+                        </div>
+                    `;
+                    container.appendChild(col);
+                });
+            }
+        }
+        updateCartBadge();
+    </script>
+
+</body>
+</html>

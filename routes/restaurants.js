@@ -3,8 +3,19 @@ const Restaurant = require('../models/Restaurant');
 const auth = require('../middleware/auth');
 const upload = require('../middleware/upload');
 
-// GET /api/restaurants - lista ristoranti del ristoratore loggato
-router.get('/', auth, async (req, res) => {
+// GET /api/restaurants - lista ristoranti
+router.get('/', async (req, res) => {
+    try {
+        const restaurants = await Restaurant.find();
+        res.json(restaurants);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Errore nel recupero dei ristoranti' });
+    }
+});
+
+// GET /api/restaurants/mine - lista ristoranti del ristoratore loggato
+router.get('/mine', auth, async (req, res) => {
     try {
         const restaurants = await Restaurant.find({ owner: req.user.id });
         res.json(restaurants);
@@ -13,6 +24,19 @@ router.get('/', auth, async (req, res) => {
         res.status(500).json({ error: 'Errore nel recupero dei ristoranti' });
     }
 });
+
+// GET /api/restaurants/order/:id - dettaglio pubblico per il cliente
+router.get('/order/:id', async (req, res) => {
+    try {
+        const restaurant = await Restaurant.findById(req.params.id);
+        if (!restaurant) return res.status(404).json({ error: 'Ristorante non trovato' });
+        res.json(restaurant);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Errore nel recupero del ristorante' });
+    }
+});
+
 
 // GET /api/restaurants/:id - dettaglio singolo ristorante
 router.get('/:id', auth, async (req, res) => {
@@ -61,7 +85,7 @@ router.put('/:id', auth, upload.single('image'), async (req, res) => {
         const updated = await Restaurant.findByIdAndUpdate(
             req.params.id,
             { name, address, phone, piva, description, image },
-            { new: true }
+            { returnDocument: 'after' }
         );
         res.json(updated);
     } catch (error) {

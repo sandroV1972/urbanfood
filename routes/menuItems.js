@@ -16,6 +16,26 @@ router.get('/', auth, async (req, res) => {
     }
 });
 
+router.get('/restaurant/:id', async (req, res) => {
+    try {
+        const menuItems = await MenuItem.find({ restaurant: req.params.id, available: true });
+        res.json(menuItems);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Errore nel recupero del menu' });
+    }
+});
+router.get('/:id', auth, async (req, res) => {
+    try {
+        const menuItem = await MenuItem.findById(req.params.id);
+        if (!menuItem) return res.status(404).json({ error: 'Piatto non trovato' });
+        res.json(menuItem);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Errore nel recupero del piatto' });
+    }
+})
+
 // Aggiunge piatti dal catalogo Meals
 router.post('/from-catalog', auth, async (req, res) => {
     try {
@@ -74,6 +94,36 @@ router.post('/', auth, upload.single('image'), async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Errore nella creazione del piatto' });
+    }
+});
+
+// Modifica un piatto del menu
+router.put('/:id', auth, upload.single('image'), async (req, res) => {
+    try {
+        const { strMeal, strCategory, strArea, strInstructions, strTags, ingredients, measures, price } = req.body;
+
+        const updateData = {
+            strMeal,
+            strCategory,
+            strArea,
+            strInstructions,
+            strTags,
+            ingredients: ingredients ? ingredients.split('\n').filter(Boolean) : [],
+            measures: measures ? measures.split('\n').filter(Boolean) : [],
+            price
+        };
+
+        if (req.file) {
+            updateData.strMealThumb = '/uploads/' + req.file.filename;
+        }
+
+        const menuItem = await MenuItem.findByIdAndUpdate(req.params.id, updateData, { returnDocument: 'after' });
+        if (!menuItem) return res.status(404).json({ error: 'Piatto non trovato' });
+
+        res.json(menuItem);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Errore nella modifica del piatto' });
     }
 });
 

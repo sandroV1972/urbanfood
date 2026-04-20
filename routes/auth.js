@@ -25,12 +25,24 @@ router.post('/register', async (req, res) => {
     }
 });
 
+router.get('/profile', auth, async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id).select('-password');
+        res.json(user);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Errore nel recupero del profilo' });
+    }
+})
+
 router.put('/profile', auth, async (req, res) => {
     try {
-        const { name, email } = req.body;
-        const user = await User.findByIdAndUpdate( req.user.id , { name, email }, { new: true });
+        const { name, email, address, credit_card, preferenze, phone } = req.body;
+        const user = await User.findByIdAndUpdate( req.user.id , 
+            { name, email, address, credit_card, preferenze, phone }, 
+            { returnDocument: 'after' });
         const token = jwt.sign({ id: user.id, email: user.email, name: user.name, usrType: user.usrType }, process.env.JWT_SECRET);
-        res.json({ token, user: { name, email, usrType } });
+        res.json({ token, user: { name, email, usrType: user.usrType } });
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Errore durante la modifica del profilo' });

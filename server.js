@@ -52,6 +52,10 @@ app.get('/restaurant-order/:id', (req, res) => {
   res.sendFile(__dirname + '/public/restaurant-order.html');
 });   
 
+app.get('/my-orders', (req, res) => {
+  res.sendFile(__dirname + '/public/my-orders.html');
+});
+
 // Importa le rotte API
 const routes = require('./routes');
 app.use('/api', routes);

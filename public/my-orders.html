@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SurfShack - I miei ordini</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+</head>
+<body>
+    <div id="navbar"></div>
+
+    <div class="container py-5">
+        <h2 class="section-title">I miei ordini</h2>
+        <div id="ordersContainer" class="mt-4"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/auth.js"></script>
+    <script>
+        const token = localStorage.getItem('token');
+        if (!token) window.location.href = '/';
+
+        const STATUS_LABELS = {
+            'ordinato':        { label: 'Ordinato',        variant: 'secondary', icon: 'bi-check-circle' },
+            'in_preparazione': { label: 'In preparazione', variant: 'warning',   icon: 'bi-fire' },
+            'in_consegna':     { label: 'In consegna',     variant: 'info',      icon: 'bi-truck' },
+            'consegnato':      { label: 'Consegnato',      variant: 'success',   icon: 'bi-bag-check' }
+        };
+
+        function statusBadge(status) {
+            const s = STATUS_LABELS[status] || { label: status, variant: 'secondary', icon: 'bi-question' };
+            return `<span class="badge bg-${s.variant}"><i class="bi ${s.icon} me-1"></i>${s.label}</span>`;
+        }
+
+        function formatDate(dateString) {
+            return new Date(dateString).toLocaleString('it-IT', {
+                day: '2-digit', month: '2-digit', year: 'numeric',
+                hour: '2-digit', minute: '2-digit'
+            });
+        }
+
+        function deliveryInfo(delivery) {
+            if (delivery.dove === 'domicilio') {
+                return `<i class="bi bi-house-door me-1"></i>Consegna a domicilio: ${delivery.indirizzo}`;
+            }
+            return `<i class="bi bi-shop me-1"></i>Ritiro al ristorante`;
+        }
+
+        async function loadOrders() {
+            const container = document.getElementById('ordersContainer');
+            const res = await fetch('/api/orders', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (!res.ok) {
+                container.innerHTML = '<p class="text-center mt-5">Errore nel caricamento degli ordini</p>';
+                return;
+            }
+
+            const orders = await res.json();
+
+            if (orders.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center mt-5">
+                        <i class="bi bi-bag-x" style="font-size: 3rem; color: var(--ss-gray);"></i>
+                        <p class="mt-3">Non hai ancora effettuato ordini</p>
+                        <a href="/" class="btn-add d-inline-block mt-2">Esplora i ristoranti</a>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = orders.map(order => `
+                <div class="cart-card card mb-3">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <h5 class="card-title mb-1">${order.restaurant?.name || 'Ristorante'}</h5>
+                                <p class="text-muted small mb-0"><i class="bi bi-clock me-1"></i>${formatDate(order.date)}</p>
+                            </div>
+                            ${statusBadge(order.status)}
+                        </div>
+
+                        <p class="mb-1 small"><i class="bi bi-people me-1"></i>${order.people} ${order.people > 1 ? 'persone' : 'persona'}</p>
+                        <p class="mb-2 small">${deliveryInfo(order.delivery)}</p>
+
+                        <hr class="my-2">
+
+                        <div class="mb-2">
+                            ${order.items.map(item => `
+                                <div class="d-flex justify-content-between small">
+                                    <span>${item.menuItem?.strMeal || 'Piatto'} × ${item.quantity}</span>
+                                    <span>€${(item.price * item.quantity).toFixed(2)}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+
+                        ${order.delivery_cost > 0 ? `
+                            <div class="d-flex justify-content-between text-muted small">
+                                <span>Costo consegna</span>
+                                <span>€${order.delivery_cost.toFixed(2)}</span>
+                            </div>
+                        ` : ''}
+
+                        <div class="d-flex justify-content-between fw-bold mt-2" style="color: var(--ss-teal);">
+                            <span>Totale</span>
+                            <span>€${order.total.toFixed(2)}</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        loadOrders();
+    </script>
+</body>
+</html>

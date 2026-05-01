@@ -11,6 +11,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
 <body>
     <button class="cart-handle" data-bs-toggle="offcanvas" data-bs-target="#cartOffcanvas">
@@ -37,6 +39,53 @@
         <!-- Menu -->
         <h2 class="section-title">Menu</h2>
         <div class="row g-4" id="menuContainer"></div>
+    </div>
+
+    <!-- Modale conferma ordine -->
+    <div class="modal fade" id="checkoutModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="checkoutModalTitle">Conferma Ordine</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="checkoutModalSummary" class="text-center mb-3"></div>
+                    <hr>
+                    <form id="checkoutForm">
+                        <div class="mb-3">
+                            <label for="checkoutPeople" class="form-label">Numero persone</label>
+                            <input type="number" class="form-control" id="checkoutPeople" min="1" value="1" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label d-block">Tipo di servizio</label>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="delivery" id="ristorante" value="ristorante" required>
+                                <label class="form-check-label" for="ristorante">Ritiro al ristorante</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="delivery" id="domicilio" value="domicilio">
+                                <label class="form-check-label" for="domicilio">Consegna a domicilio</label>
+                            </div>
+                        </div>
+                        <div id="addressGroup" class="d-none">
+                            <div class="mb-3">
+                                <label for="address" class="form-label">Indirizzo</label>
+                                <input type="text" class="form-control" id="address" placeholder="Via, civico, città">
+                            </div>
+                            <div class="mb-3">
+                                <label for="phone" class="form-label">Telefono</label>
+                                <input type="text" class="form-control" id="phone" placeholder="Numero di telefono">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary me-auto" data-bs-dismiss="modal">Annulla</button>
+                    <button type="button" class="btn btn-primary" onclick="confirmOrderFromModal()">Conferma</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Modale dettaglio piatto -->
@@ -88,7 +137,25 @@
 
         // Se non loggato nascondi cart
         if (!token) document.querySelector('.cart-handle').style.display = 'none';
+        
+        // Eventi Listeners
         document.getElementById('cartOffcanvas').addEventListener('show.bs.offcanvas', renderCart);
+        document.getElementById('checkoutForm').addEventListener('change', (e) => {
+            if (e.target.value   === 'domicilio') {
+                // qui leggi e.target.value e mostri/nascondi
+                document.getElementById('addressGroup').classList.remove('d-none');
+            } else {
+                document.getElementById('addressGroup').classList.add('d-none');
+            }
+        });
+        document.getElementById('checkoutPeople').addEventListener('input', (e) => {
+            const people = Number(e.target.value);
+            document.getElementById('domicilio').disabled = people < 2;
+                if (people < 2 && document.getElementById('domicilio').checked) {
+                    document.getElementById('ristorante').checked = true;
+                    document.getElementById('addressGroup').classList.add('d-none');
+                }
+        });
 
         // Carica info ristorante
         fetch(`/api/restaurants/order/${restaurantId}`)
@@ -110,13 +177,14 @@
                     .then(r => r.json())
                     .then(data => {
                         if (data.length > 0) {
-                            const lat = data[0].lat;
-                            const lon = data[0].lon;
-                            const bbox = `${lon-0.005},${lat-0.005},${Number(lon)+0.005},${Number(lat)+0.005}`;
-                            mapDiv.innerHTML = `<iframe width="100%" height="100%" style="border:0; border-radius:16px;"
-                                loading="lazy"
-                                src="https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${lat},${lon}">
-                            </iframe>`;
+                            const lat = Number(data[0].lat);
+                            const lon = Number(data[0].lon);
+                            const map = L.map('map').setView([lat, lon], 15);
+                            L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                                attribution: '© OpenStreetMap contributors',
+                                maxZoom: 19
+                            }).addTo(map);
+                            L.marker([lat, lon]).addTo(map).bindPopup(restaurant.name).openPopup();
                         } else {
                             mapDiv.innerHTML = '<p class="text-center mt-5">Mappa non disponibile</p>';
                         }
@@ -193,6 +261,7 @@
         function renderCart() {
             const cartItems = JSON.parse(localStorage.getItem('cart')) || [];
             const container = document.getElementById('cartContainer');
+            let cartTotal = 0;
             container.innerHTML = '';
             if (cartItems.length === 0) {
                 container.innerHTML = '<p class="text-center mt-5">Il tuo carrello è vuoto</p>';
@@ -201,21 +270,120 @@
                 cartItems.forEach(item => {
                     const cartItem = itemsMap[item.id];
                     const col = document.createElement('div');
-                    col.classList.add('col-12', 'col-md-6', 'col-lg-4');
+                    col.classList.add('mb-3');
                     col.innerHTML = `
-                        <div class="cart-card card h-100">
-                            <img src="${cartItem.strMealThumb}" class="card-img-top" alt="${cartItem.strMeal}">
-                            <div class="card-body">
-                                <h5 class="card-title">${cartItem.strMeal}</h5>
-                                <p class="card-text">${cartItem.strCategory || ''}</p>
-                                <p class="card-text fw-bold" style="color: var(--ss-teal);">€${cartItem.price.toFixed(2)}</p>
-                                <p class="card-text">Quantità: ${item.quantity}</p>
+                        <div class="cart-card card">
+                            <div class="row g-0">
+                                <div class="col-4">
+                                    <img src="${cartItem.strMealThumb}" class="card-img-top" alt="${cartItem.strMeal}">
+                                </div>
+                                <div class="col-8">
+                                    <div class="card-body pos-relative">
+                                        <h6 class="card-title mb-1">${cartItem.strMeal}</h5>
+                                        <p class="card-text small mb-0">${cartItem.strCategory || ''}</p>
+                                        <p class="card-text fw-bold" style="color: var(--ss-teal);">€${cartItem.price.toFixed(2)}</p>
+                                        <div class="d-flex align-items-center justify-content-start">
+                                            <div class="qty-control">
+                                                <button class="qty-btn" onclick="changeCartQty('${cartItem._id}', -1)">
+                                                    <i class="bi bi-dash"></i>
+                                                </button>
+                                                <div class="qty-value">
+                                                    ${item.quantity}
+                                                </div>  
+                                                <button class="qty-btn" onclick="changeCartQty('${cartItem._id}', 1)">
+                                                    <i class="bi bi-plus"></i>
+                                                </button>
+                                            </div>  
+                                            <button class="btn btn-md btn-link ms-auto " onclick="removeFromCart('${cartItem._id}')">
+                                                    <i class="bi bi-trash" style="color: var(--ss-teal);"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     `;
                     container.appendChild(col);
+                    cartTotal += cartItem.price * item.quantity;
                 });
+                document.getElementById('cartTotal').textContent = `€${cartTotal.toFixed(2)}`;
             }
+        }
+        function checkout() {
+            document.getElementById('checkoutPeople').dispatchEvent(new Event('input'));
+
+            const cartItems = (JSON.parse(localStorage.getItem('cart')) || []).filter(i => i.quantity > 0);
+            if (cartItems.length === 0) return;
+            localStorage.setItem('cart', JSON.stringify(cartItems));
+            bootstrap.Offcanvas.getInstance(document.getElementById('cartOffcanvas')).hide();
+            updateCartBadge();
+            const rows = cartItems.map(item => {
+                const meal = itemsMap[item.id];
+                const subtotal = meal.price * item.quantity;
+                return `<div>${meal.strMeal} × ${item.quantity} — €${subtotal.toFixed(2)}</div>`;
+            }).join('');
+
+            const total = cartItems.reduce((sum, i) => sum + itemsMap[i.id].price * i.quantity, 0);
+
+            document.getElementById('checkoutModalSummary').innerHTML =
+                rows + `<hr><strong>Totale: €${total.toFixed(2)}</strong>`;
+
+            new bootstrap.Modal(document.getElementById('checkoutModal')).show();
+        }
+        function   changeCartQty(id, delta) {
+            const cart = JSON.parse(localStorage.getItem('cart')) || [];
+            const idx = cart.findIndex(i => i.id === id);
+            if (idx !== -1) {
+                cart[idx].quantity = Math.max(1, cart[idx].quantity + delta);
+                localStorage.setItem('cart', JSON.stringify(cart));
+                renderCart();
+            }
+        } 
+        async function confirmOrderFromModal() {
+            //leggi dati dal form
+            const meals = JSON.parse(localStorage.getItem('cart')) || [];
+            const people = document.getElementById('checkoutPeople').value;
+            const dove = document.querySelector('input[name="delivery"]:checked')?.value;
+             // valida i dati
+            const indirizzo = dove === 'domicilio' ? document.getElementById('address').value : undefined;
+            const telefono = dove === 'domicilio' ? document.getElementById('phone').value : undefined;
+            if (!dove) { alert('Seleziona un tipo di servizio'); return; }
+            if (dove === 'domicilio' && !indirizzo) { alert('Inserisci un indirizzo'); return; }
+            if (dove === 'domicilio' && people < 2) { alert('Il domicilio richiede almeno 2 persone'); return; }
+             // costruisci il payload
+            const payload = {
+                restaurant: restaurantId,
+                items: meals.map(m => ({ 
+                    menuItem: m.id, 
+                    quantity: m.quantity,
+                    price: itemsMap[m.id].price
+                })),
+                people,
+                delivery: { dove, telefono }   
+            };
+            // invia la richiesta al server POST /api/orders
+            const res = await fetch('/api/orders', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(payload)
+            })
+            // se la richiesta va a buon fine, nascondi la modale
+            if (res.ok) {
+                localStorage.removeItem('cart');
+                updateCartBadge();
+                bootstrap.Modal.getInstance(document.getElementById('checkoutModal')).hide();
+                // bonus: redirect a una pagina "i miei ordini"
+                document.location.href = '/my-orders';
+            } else {
+                const err = await res.json();
+                alert(err.error || 'Errore nella creazione dell\'ordine');
+            }            
+            // mostra modale conferma ordine, tempi di consegna e totale 
+            // con costi di consegna se domicilio
+
         }
         updateCartBadge();
     </script>

@@ -20,8 +20,24 @@ body {
 }
 /* ---- CART ---- */
 .cart-card {
-    
+    background-color: #1B2838;
+    color: var(--ss-sand)
 }
+
+.cart-card .card-body {
+    padding: 0.2rem 0.75rem;
+}
+
+.cart-card .card-title {
+    margin: 0 0 0.25rem 0;  /* top right bottom left */
+}
+
+.cart-card img {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+}
+
 .cart-handle {
     position: fixed;
     bottom: 2rem;
@@ -239,11 +255,10 @@ z-index: 1020;
 /* ---- CARRELLO QTY ---- */
 .qty-control {
     gap: 0.5rem;
-    margin: 0 auto;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 84px;
+    width: 50%;
     height: 28px;
     border-radius: 10%;
     border: 1px solid var(--ss-teal);
@@ -252,7 +267,7 @@ z-index: 1020;
 }
 
 .qty-btn {
-    width: 28px;
+    width: 32px;
     height: 28px;
     padding: 0;
     border-radius: 10%;
@@ -264,6 +279,7 @@ z-index: 1020;
     display: flex;
     align-items: center;
     justify-content: center;
+    flex: 1;
 }
 
 .qty-btn:hover {

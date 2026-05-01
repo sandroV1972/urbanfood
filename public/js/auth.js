@@ -57,6 +57,7 @@ function checkAuth() {
         navLinks.innerHTML = `
             <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
             <li class="nav-item"><a class="nav-link" href="#menu">Menu</a></li>
+            <li class="nav-item"><a class="nav-link" href="/my-orders">I miei ordini</a></li>
         `;
     }
 

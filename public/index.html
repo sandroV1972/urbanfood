@@ -94,7 +94,7 @@
                     <div class="row align-items-center"> 
                         <div class="col-md-8">
                             <h2 class="section-title">Benvenuto in SurfShack</h2>
-                            <p class="section-subtitle">
+                            <p class="section-subtitle" id="testoBenvenuto">
                                 Nato sulle onde del Golfo dei Poeti, SurfShack porta lo spirito della California
                                 anni '80 nel cuore di Lerici. Tavole da surf alle pareti, neon che brillano al
                                 tramonto e il profumo di grigliata che arriva fino alla spiaggia.
@@ -107,7 +107,6 @@
                                 Registrati per esplorare i menu dei nostri ristoranti, ordinare online e
                                 ricevere le tue onde di gusto direttamente a casa. Ride the taste!
                             </p>
-                            <a href="./register" class="btn btn-primary">Registrati</a>
                         </div>
                         <div class="col-md-4">
                             <img id="welcomeMealImg" class="img-fluid rounded-4 card-glow" src="" alt="Piatto del giorno">
@@ -166,8 +165,12 @@
             if (payload.usrType === 'ristoratore') {
                 window.location.href = '/dashboard';
             }
+        } else {
+             document.getElementById('testoBenvenuto').insertAdjacentHTML('beforeend', `
+                <div class="text-center mt-4">
+                    <a href="./register" class="btn btn-primary">Registrati</a>
+                </div>`);
         }
-
     </script>
 
 </body>

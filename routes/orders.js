@@ -31,7 +31,10 @@ async function getRouteDistance(fromAddress, toAddress) {
 // GET /api/orders - ordini del cliente loggato
 router.get('/', auth, async (req, res) => {
     try {
-        const orders = await Order.find({ user: req.user.id }).sort({ date: -1 });
+        const orders = await Order.find({ user: req.user.id })
+            .sort({ date: -1 })
+            .populate('restaurant', 'name address')
+            .populate('items.menuItem', 'strMeal strMealThumb');
         res.json(orders);
     } catch (error) {
         console.error(error);

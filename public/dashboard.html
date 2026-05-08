@@ -34,7 +34,8 @@
         </div>
         <div class="bg-white rounded-4 p-4 shadow-sm" id="latestOrders">
             <h3 class="section-title">Ordini recenti</h3>
-            <p style="color: var(--ss-gray);">Nessun ordine per ora.</p>
+            <div id="ordersList" class="row g-3 mt-2"></div>
+            <p id="noOrders" class="text-center mt-3 d-none" style="color: var(--ss-gray);">Nessun ordine per ora.</p>
         </div>
     </div>
 
@@ -153,6 +154,49 @@
             }
         }
 
+        // carica ordini recenti
+        async function loadOrders() {
+            try {
+                const res = await fetch('/api/orders/restaurant', {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                if (!res.ok) throw new Error('Errore nel caricamento');
+                const orders = await res.json();
+                const list = document.getElementById('ordersList');
+                const noMsg = document.getElementById('noOrders');
+
+                if (!Array.isArray(orders) || orders.length === 0) {
+                    noMsg.classList.remove('d-none');
+                    return;
+                }
+                noMsg.classList.add('d-none');
+
+                list.innerHTML = orders.map(o => `
+                    <div class="col-12">
+                        <div class="cart-card card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <div>
+                                        <h5 class="mb-1">Ordine #${o._id.slice(-6)}</h5>
+                                        <p class="text-muted small mb-0">${new Date(o.date).toLocaleString('it-IT')}</p>
+                                    </div>
+                                    <span class="badge bg-secondary">${o.status}</span>
+                                </div>
+                                <p class="small mb-1"><i class="bi bi-people me-1"></i>${o.people} persone</p>
+                                <p class="small mb-2"><i class="bi bi-${o.delivery.dove === 'domicilio' ? 'house-door' : 'shop'} me-1"></i>${o.delivery.dove === 'domicilio' ? `Domicilio: ${o.delivery.indirizzo}` : 'Ritiro'}</p>
+                                <div class="d-flex justify-content-between fw-bold" style="color: var(--ss-teal);">
+                                    <span>Totale</span>
+                                    <span>€${o.total.toFixed(2)}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+
+            } catch (err) {
+                console.error('Errore caricamento ordini:', err);
+            }
+        }
         // Submit form nuovo ristorante
         document.getElementById('restaurantForm').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -181,6 +225,7 @@
         });
 
         loadRestaurants();
+        loadOrders();
     </script>
 </body>
 </html>

@@ -7,6 +7,7 @@ router.use('/meals', require('./meals'));
 router.use('/meals', require('./meals'));
 router.use('/menu-items', require('./menuItems'));
 router.use('/orders', require('./orders'));
+router.use('/reviews', require('./reviews'));
 // router.use('/stats', require('./stats'));
 
 module.exports = router;

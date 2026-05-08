@@ -1,6 +1,29 @@
 const router = require('express').Router();
 const Meal = require('../models/Meal');
 
+/**
+ * @swagger
+ * /api/meals/random:
+ *   get:
+ *     summary: Ritorna un piatto casuale dal catalogo
+ *     description: Endpoint pubblico, usato dalla home per la card "Piatto del giorno"
+ *     tags: [Meals]
+ *     responses:
+ *       200:
+ *         description: Array contenente un singolo piatto
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Meal'
+ *       500:
+ *         description: Errore server
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 router.get('/random', async (req, res) => {
     try {
         const randomMeal = await Meal.aggregate([{ $sample: { size: 1 } }]);
@@ -11,6 +34,29 @@ router.get('/random', async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * /api/meals:
+ *   get:
+ *     summary: Lista tutti i piatti del catalogo
+ *     description: Endpoint pubblico, ritorna l'intero catalogo dei piatti disponibili
+ *     tags: [Meals]
+ *     responses:
+ *       200:
+ *         description: Array di piatti
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Meal'
+ *       500:
+ *         description: Errore server
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 router.get('/', async (req, res) => {
     try {
         const meals = await Meal.find();

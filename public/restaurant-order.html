@@ -359,7 +359,7 @@
                     price: itemsMap[m.id].price
                 })),
                 people,
-                delivery: { dove, telefono }   
+                delivery: { dove, indirizzo, telefono }   
             };
             // invia la richiesta al server POST /api/orders
             const res = await fetch('/api/orders', {
@@ -370,6 +370,7 @@
                 },
                 body: JSON.stringify(payload)
             })
+
             // se la richiesta va a buon fine, nascondi la modale
             if (res.ok) {
                 localStorage.removeItem('cart');
@@ -381,9 +382,6 @@
                 const err = await res.json();
                 alert(err.error || 'Errore nella creazione dell\'ordine');
             }            
-            // mostra modale conferma ordine, tempi di consegna e totale 
-            // con costi di consegna se domicilio
-
         }
         updateCartBadge();
     </script>

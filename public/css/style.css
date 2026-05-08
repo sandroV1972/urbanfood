@@ -115,6 +115,23 @@ z-index: 1020;
     color: var(--ss-teal) !important;
 }
 
+.nav-tabs {
+    --bs-nav-tabs-link-active-bg: var(--ss-navy-light);
+    --bs-nav-tabs-link-active-color: var(--ss-teal);
+    --bs-nav-tabs-link-active-border-color: var(--ss-teal) var(--ss-teal) var(--ss-navy-light);
+    --bs-nav-tabs-border-color: rgba(0, 206, 209, 0.3);
+}
+
+.nav-tabs .nav-link {
+    color: var(--ss-sand);
+    border-color: transparent;
+}
+
+.nav-tabs .nav-link:hover {
+    color: var(--ss-teal);
+    border-color: transparent;
+}
+
 .btn-login {
     background: linear-gradient(135deg, var(--ss-teal), #00A5A8);
     color: var(--ss-navy);

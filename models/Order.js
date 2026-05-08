@@ -19,7 +19,9 @@ const orderSchema = new mongoose.Schema({
         dove: { type: String,
                 enum: ['ristorante', 'domicilio'],
                 required: true},
-        indirizzo: String},
+        indirizzo: String,
+        telefono: String
+    },
     delivery_cost: { type: Number }
 });
 

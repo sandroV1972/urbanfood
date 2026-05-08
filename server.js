@@ -15,13 +15,18 @@ app.use(cors());
 
 const port = process.env.PORT || 3000; // Usa la porta definita dall'ambiente o 3000 di default
 
-// Connessione al database e seed piatti
-const seedMeals = require('./seed/seed');
+// Connessione al database e seed iniziale (piatti, ristoranti, menu)
+const seed = require('./seed/seed');
 connectDB();
-seedMeals();
+seed();
 
 // Middleware per parsare il JSON nelle richieste
 app.use(express.json());
+
+// Middleware per il routing
+const swaggerUi = require('swagger-ui-express');
+const swaggerSpec = require('./swagger/swagger');
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Definizione middleware pagine statiche
 app.use(express.static('public'));
@@ -51,9 +56,14 @@ app.get('/restaurants/:id', (req, res) => {
 app.get('/restaurant-order/:id', (req, res) => {
   res.sendFile(__dirname + '/public/restaurant-order.html');
 });   
-
+app.get('/search', (req, res) => {
+  res.sendFile(__dirname + '/public/search.html');
+});
 app.get('/my-orders', (req, res) => {
   res.sendFile(__dirname + '/public/my-orders.html');
+});
+app.get('/orders', (req, res) => {
+  res.sendFile(__dirname + '/public/orders.html');
 });
 
 // Importa le rotte API

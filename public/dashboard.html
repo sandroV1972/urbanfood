@@ -110,7 +110,7 @@
         // Carica i ristoranti del ristoratore
         async function loadRestaurants() {
             try {
-                const res = await fetch('/api/restaurants', {
+                const res = await fetch('/api/restaurants/mine', {
                     headers: { 'Authorization': 'Bearer ' + token }
                 });
                 if (!res.ok) throw new Error('Errore nel caricamento');

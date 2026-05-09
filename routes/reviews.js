@@ -135,7 +135,7 @@ router.get('/:id', async (req, res) => {
  *         application/json:
  *           schema:
  *             type: object
- *             required: [restaurant, rating, comment]
+ *             required: [restaurant, rating]
  *             properties:
  *               restaurant:
  *                 type: string

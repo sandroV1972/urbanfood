@@ -85,7 +85,7 @@ const seedMeals = async () => {
 
 const seedRestaurants = async () => {
     try {
-        const password = await bcrypt.hash('test1234', 10);
+        const password = await bcrypt.hash('password123', 10);
         let added = 0;
         let skipped = 0;
 
@@ -140,9 +140,82 @@ const seedRestaurants = async () => {
     }
 };
 
+// Garantisce che ogni ristorante abbia un proprio ristoratore.
+// Wave Shack rimane di matteo@valenti.email; gli altri ristoranti attualmente
+// di matteo vengono riassegnati a un nuovo utente con email derivata dal nome
+// (slug) e password "password123".
+const KEEP_RESTAURANT_NAME = 'Wave Shack';
+const KEEP_OWNER_EMAIL = 'matteo@valenti.email';
+const KEEP_OWNER_NAME = 'Matteo Valenti';
+
+const slugify = (name) =>
+    name.toLowerCase()
+        .normalize('NFD').replace(/[̀-ͯ]/g, '')
+        .replace(/[^a-z0-9]+/g, '');
+
+const ensureOwners = async () => {
+    try {
+        const password = await bcrypt.hash('password123', 10);
+
+        // Trova o crea matteo
+        let matteo = await User.findOne({ email: KEEP_OWNER_EMAIL });
+        if (!matteo) {
+            matteo = await User.create({
+                name: KEEP_OWNER_NAME,
+                email: KEEP_OWNER_EMAIL,
+                password,
+                usrType: 'ristoratore'
+            });
+            console.log(`+ Creato utente: ${KEEP_OWNER_EMAIL}`);
+        }
+
+        const restaurants = await Restaurant.find();
+        let createdUsers = 0;
+        let updated = 0;
+
+        for (const r of restaurants) {
+            // Wave Shack → matteo
+            if (r.name === KEEP_RESTAURANT_NAME) {
+                if (!r.owner.equals(matteo._id)) {
+                    r.owner = matteo._id;
+                    await r.save();
+                    updated++;
+                    console.log(`→ "${r.name}" assegnato a ${KEEP_OWNER_EMAIL}`);
+                }
+                continue;
+            }
+
+            // Altri ristoranti attualmente di matteo → nuovo utente
+            if (r.owner.equals(matteo._id)) {
+                const email = `${slugify(r.name)}@surfshack.it`;
+                let user = await User.findOne({ email });
+                if (!user) {
+                    user = await User.create({
+                        name: `${r.name} Owner`,
+                        email,
+                        password,
+                        usrType: 'ristoratore'
+                    });
+                    createdUsers++;
+                    console.log(`+ Creato utente: ${email}`);
+                }
+                r.owner = user._id;
+                await r.save();
+                updated++;
+                console.log(`→ "${r.name}" assegnato a ${email}`);
+            }
+        }
+
+        console.log(`Owners ensured: ${updated} aggiornati, ${createdUsers} nuovi utenti`);
+    } catch (error) {
+        console.error('Error ensuring owners:', error);
+    }
+};
+
 const seed = async () => {
     await seedMeals();
     await seedRestaurants();
+    await ensureOwners();
 };
 
 module.exports = seed;

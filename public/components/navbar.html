@@ -8,9 +8,43 @@
                 <span class="fa-solid fa-bars" style="color: var(--ss-teal);"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto ms-4" id="navLinks"></ul>
-                <div class="d-flex align-items-center">
-                    <button class="btn btn-login" data-bs-toggle="modal" data-bs-target="#loginModal">
+                <ul class="navbar-nav me-auto ms-4" id="navLinks">
+                    <!-- Cliente -->
+                    <li class="nav-item" data-role="cliente">
+                        <a class="nav-link" href="/">Home</a>
+                    </li>
+                    <li class="nav-item" data-role="cliente">
+                        <a class="nav-link" href="/search">Ricerca</a>
+                    </li>
+                    <li class="nav-item" data-role="cliente">
+                        <a class="nav-link" href="/my-orders">I miei ordini</a>
+                    </li>
+
+                    <!-- Ristoratore -->
+                    <li class="nav-item" data-role="ristoratore">
+                        <a class="nav-link" href="/dashboard">Dashboard</a>
+                    </li>
+                    <li class="nav-item" data-role="ristoratore">
+                        <a class="nav-link" href="/restaurants">Ristorante</a>
+                    </li>
+                    <li class="nav-item" data-role="ristoratore">
+                        <a class="nav-link" href="/orders">Ordini</a>
+                    </li>
+                    <li class="nav-item" data-role="ristoratore">
+                        <a class="nav-link" href="/stats">Statistiche</a>
+                    </li>
+
+                    <!-- Guest (non loggato) -->
+                    <li class="nav-item" data-role="guest">
+                        <a class="nav-link" href="/">Home</a>
+                    </li>
+                </ul>
+                <div class="d-flex align-items-center" id="userArea">
+                    <a href="/profile" class="navbar-text me-2" data-role="cliente,ristoratore" id="profileLink">
+                        <i class="bi bi-gear"></i>
+                    </a>
+                    <span class="navbar-text me-3" data-role="cliente,ristoratore" id="userName"></span>
+                    <button class="btn btn-login" id="authButton" data-bs-toggle="modal" data-bs-target="#loginModal">
                         <i class="bi bi-person-circle"></i> Accedi
                     </button>
                 </div>

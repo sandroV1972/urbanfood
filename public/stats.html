@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SurfShack - Statistiche</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+</head>
+<body>
+    <div id="navbar"></div>
+
+    <div class="container py-5">
+        <h2 class="section-title">Statistiche del ristorante</h2>
+
+        <!-- KPI cards -->
+        <div class="row g-3 mt-2" id="kpiCards"></div>
+
+        <!-- Top piatti + andamento fatturato -->
+        <div class="row g-4 mt-3">
+            <div class="col-lg-6">
+                <div class="cart-card card h-100">
+                    <div class="card-body">
+                        <h5 class="mb-3"><i class="bi bi-trophy me-1"></i>Top 5 piatti</h5>
+                        <div id="topDishes"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="cart-card card h-100">
+                    <div class="card-body">
+                        <h5 class="mb-3"><i class="bi bi-graph-up me-1"></i>Fatturato ultimi 7 giorni</h5>
+                        <div id="revenueChart"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ordini per stato -->
+        <div class="row g-4 mt-3">
+            <div class="col-12">
+                <div class="cart-card card">
+                    <div class="card-body">
+                        <h5 class="mb-3"><i class="bi bi-list-task me-1"></i>Ordini per stato</h5>
+                        <div id="ordersByStatus" class="d-flex flex-wrap gap-2"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/auth.js"></script>
+    <script>
+        const token = localStorage.getItem('token');
+        if (!token) window.location.href = '/';
+
+        const role = JSON.parse(atob(token.split('.')[1])).usrType;
+        if (role !== 'ristoratore') window.location.href = '/';
+
+        const STATUS_LABELS = {
+            'ordinato':        { label: 'Ordinato',        variant: 'secondary' },
+            'in_preparazione': { label: 'In preparazione', variant: 'warning' },
+            'in_consegna':     { label: 'In consegna',     variant: 'info' },
+            'consegnato':      { label: 'Consegnato',      variant: 'success' }
+        };
+
+        function renderStars(rating) {
+            let html = '';
+            for (let i = 1; i <= 5; i++) {
+                if (rating >= i) html += '<i class="bi bi-star-fill text-warning"></i>';
+                else if (rating >= i - 0.5) html += '<i class="bi bi-star-half text-warning"></i>';
+                else html += '<i class="bi bi-star text-muted"></i>';
+            }
+            return html;
+        }
+
+        function kpiCard(icon, label, value, color = 'var(--ss-teal)') {
+            return `
+                <div class="col-6 col-md-3">
+                    <div class="cart-card card h-100">
+                        <div class="card-body text-center">
+                            <i class="bi ${icon}" style="font-size: 2rem; color: ${color};"></i>
+                            <p class="small mb-1 mt-2" style="color: ${color};">${label}</p>
+                            <h3 class="mb-0" style="color: ${color};">${value}</h3>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function loadStats() {
+            const res = await fetch('/api/stats/restaurant', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (!res.ok) {
+                document.querySelector('.container').innerHTML +=
+                    '<p class="text-center mt-5">Errore nel caricamento delle statistiche</p>';
+                return;
+            }
+
+            const stats = await res.json();
+
+            // KPI cards
+            document.getElementById('kpiCards').innerHTML = [
+                kpiCard('bi-receipt', 'Ordini totali', stats.totalOrders),
+                kpiCard('bi-cash', 'Fatturato totale', `€${stats.totalRevenue.toFixed(2)}`),
+                kpiCard('bi-bar-chart', 'Ordine medio', `€${stats.avgOrderValue.toFixed(2)}`),
+                kpiCard('bi-star-fill',
+                        `Rating (${stats.totalReviews})`,
+                        stats.averageRating ? `${stats.averageRating} ⭐` : '–',
+                        'var(--ss-pink)')
+            ].join('');
+
+            // Top dishes
+            const topContainer = document.getElementById('topDishes');
+            if (stats.topDishes.length === 0) {
+                topContainer.innerHTML = '<p class="text-muted small mb-0">Nessun piatto venduto ancora.</p>';
+            } else {
+                const max = stats.topDishes[0].quantity;
+                topContainer.innerHTML = stats.topDishes.map(d => {
+                    const pct = (d.quantity / max) * 100;
+                    return `
+                        <div class="mb-2">
+                            <div class="d-flex justify-content-between small mb-1">
+                                <span>${d.name}</span>
+                                <span class="text-muted">${d.quantity} × · €${d.revenue.toFixed(2)}</span>
+                            </div>
+                            <div class="progress" style="height: 8px; background: rgba(0,206,209,0.15);">
+                                <div class="progress-bar" style="width: ${pct}%; background: var(--ss-teal);"></div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            // Revenue last 7 days (semplice grafico a barre verticali)
+            const chartContainer = document.getElementById('revenueChart');
+            const maxRev = Math.max(...stats.revenueLast7Days.map(d => d.revenue), 1);
+            chartContainer.innerHTML = `
+                <div class="d-flex align-items-end justify-content-between gap-1" style="height: 180px;">
+                    ${stats.revenueLast7Days.map(d => {
+                        const h = (d.revenue / maxRev) * 100;
+                        const dayLabel = new Date(d.date).toLocaleDateString('it-IT', { weekday: 'short' });
+                        return `
+                            <div class="flex-fill text-center">
+                                <div title="€${d.revenue.toFixed(2)}"
+                                     style="height: ${h}%; background: var(--ss-teal); border-radius: 4px 4px 0 0; min-height: 2px;"></div>
+                                <small class="text-muted d-block mt-1">${dayLabel}</small>
+                                <small class="d-block" style="color: var(--ss-teal);">€${d.revenue.toFixed(0)}</small>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+
+            // Orders by status
+            const statusContainer = document.getElementById('ordersByStatus');
+            const statusKeys = Object.keys(stats.ordersByStatus);
+            if (statusKeys.length === 0) {
+                statusContainer.innerHTML = '<p class="text-muted small mb-0">Nessun ordine ancora.</p>';
+            } else {
+                statusContainer.innerHTML = statusKeys.map(k => {
+                    const s = STATUS_LABELS[k] || { label: k, variant: 'secondary' };
+                    return `
+                        <span class="badge bg-${s.variant} fs-6 px-3 py-2">
+                            ${s.label}: ${stats.ordersByStatus[k]}
+                        </span>
+                    `;
+                }).join('');
+            }
+        }
+
+        loadStats();
+    </script>
+</body>
+</html>

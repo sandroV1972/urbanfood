@@ -8,10 +8,23 @@ Applicazione web fast-food per ordinazione online da ristoranti.
 
 ## Account di test (seed)
 
-Il seed automatico crea **5 ristoratori** con i propri ristoranti, foto e menù di esempio.
-Tutti hanno la stessa password.
+Il seed automatico (in [seed/seed.js](seed/seed.js)) viene eseguito a ogni avvio del server e
+si compone di **tre step idempotenti**:
 
-**Password (per tutti)**: `test1234`
+1. **`seedMeals`** — popola la collection `meals` con il catalogo iniziale (~13.000 piatti
+   da `meals 1.json`). Skippa se la collection contiene già documenti.
+2. **`seedRestaurants`** — crea **5 ristoranti demo** con il rispettivo ristoratore (uno
+   per ognuno) e ~5 menu items presi dal catalogo `Meals` matchati per cucina/area.
+   Saltata l'entry se l'utente proprietario esiste già (controllo per email).
+3. **`ensureOwners`** — garantisce uno stato consistente di proprietà:
+   - **Wave Shack** è sempre di `matteo@valenti.email` (l'utente viene creato se mancante)
+   - Tutti gli altri ristoranti attualmente di matteo vengono **riassegnati** a un nuovo
+     utente con email derivata dal nome ristorante (slug-based, es. `pizzeriaroma@surfshack.it`)
+   - I ristoranti già con un proprio owner unico vengono lasciati intatti
+
+**Password universale (per tutti gli utenti del seed)**: `password123`
+
+### Account creati da `seedRestaurants` (5 ristoranti demo)
 
 | Email | Nome | Ristorante | Cucine |
 |---|---|---|---|
@@ -21,9 +34,28 @@ Tutti hanno la stessa password.
 | `raj@currypalace.it` | Raj Kumar | Curry Palace | Indian, Chicken |
 | `dimitri@taverna.it` | Dimitri Papadopoulos | Greek Taverna | Lamb, Greek |
 
-Per loggarsi come **cliente**, registrarsene uno nuovo da `/register` (qualsiasi email).
+### Account gestiti da `ensureOwners`
 
-Il seed è **idempotente** (skippa se i dati esistono già). Per rigenerarlo, droppare le collections `users`, `restaurants`, `menuitems` da MongoDB Atlas e riavviare il server.
+- **`matteo@valenti.email`** — proprietario unico di **Wave Shack**. L'utente viene creato
+  automaticamente se non esiste.
+- **`<slug>@surfshack.it`** — generato dinamicamente per ogni ristorante extra (non demo,
+  non Wave Shack) trovato a runtime tra i ristoranti di matteo. Lo `slug` è il nome del
+  ristorante minuscolo senza spazi/punteggiatura (es. `Pizzeria Da Gino` →
+  `pizzeriadagino@surfshack.it`).
+
+### Cliente di test
+
+Il seed **non** crea utenti `cliente` — registrane uno nuovo da `/register` con qualsiasi email.
+
+### Idempotenza e re-run
+
+Tutto il seed è **idempotente**. Rilanciando il server più volte:
+- I piatti del catalogo non vengono duplicati
+- I ristoranti demo non vengono duplicati
+- `ensureOwners` non riassegna nulla se gli owner sono già corretti
+
+Per rigenerare lo stato da zero, droppare le collections `users`, `restaurants`,
+`menuitems` da MongoDB Atlas e riavviare il server.
 
 ---
 

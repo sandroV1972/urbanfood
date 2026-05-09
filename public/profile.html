@@ -4,113 +4,152 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SurfShack - Profilo</title>
-    <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-    <!-- Custom CSS -->
     <link rel="stylesheet" href="css/style.css">
-    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 </head>
 <body>
     <div id="navbar"></div>
 
     <div class="container py-5">
-        <div class="row justify-content-center">
-            <div class="col-md-6">
-                <h2 class="section-title">Profilo</h2>
-                <form id="profileForm">
-                    <div class="mb-3">
-                        <label for="name" class="form-label">Nome</label>
-                        <input type="text" class="form-control" id="name">
-                    </div>
-                    <div class="mb-3">
-                        <label for="email" class="form-label">Email</label>
-                        <input type="email" class="form-control" id="email">
-                    </div>
-                    <h5 class="mt-4">Indirizzo</h5>
-                    <div class="mb-3">
-                        <label for="street" class="form-label">Strada</label>
-                        <input type="text" class="form-control" id="street">
-                    </div>
-                    <div class="row">
+        <h2 class="section-title">Il mio profilo</h2>
+
+        <ul class="nav nav-tabs mb-4" id="profileTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="tab-profile" data-bs-toggle="tab" data-bs-target="#pane-profile" type="button" role="tab">
+                    <i class="bi bi-person me-1"></i>Profilo
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="tab-prefs" data-bs-toggle="tab" data-bs-target="#pane-prefs" type="button" role="tab">
+                    <i class="bi bi-heart me-1"></i>Preferenze
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="tab-card" data-bs-toggle="tab" data-bs-target="#pane-card" type="button" role="tab">
+                    <i class="bi bi-credit-card me-1"></i>Carta
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="tab-password" data-bs-toggle="tab" data-bs-target="#pane-password" type="button" role="tab">
+                    <i class="bi bi-key me-1"></i>Password
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="tab-reviews" data-bs-toggle="tab" data-bs-target="#pane-reviews" type="button" role="tab">
+                    <i class="bi bi-star me-1"></i>Le mie recensioni
+                </button>
+            </li>
+        </ul>
+
+        <div class="tab-content">
+
+            <!-- TAB PROFILO -->
+            <div class="tab-pane fade show active" id="pane-profile" role="tabpanel">
+                <form id="profileForm" class="p-4 rounded-4" style="background: var(--ss-navy-light);">
+                    <div class="row g-3">
                         <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="city" class="form-label">Città</label>
-                                <input type="text" class="form-control" id="city">
-                            </div>
-                        </div>    
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="zip" class="form-label">CAP</label>
-                                <input type="text" class="form-control" id="zip">
-                            </div>
+                            <label for="name" class="form-label">Nome</label>
+                            <input type="text" class="form-control" id="name">
                         </div>
                         <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="country" class="form-label">Paese</label>
-                                <input type="text" class="form-control" id="country">
-                            </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email">
+                        </div>
+                        <div class="col-md-6">
                             <label for="phone" class="form-label">Telefono</label>
                             <input type="text" class="form-control" id="phone">
                         </div>
-                    </div>  
-                    </div>    
-                                    <h5 class="mt-4">Preferenze</h5>
-                <div class="mb-3">
-                    <label for="cuisineType" class="form-label">Cucina preferita</label>
-                    <select class="form-select" id="cuisineType" multiple>
-                        <option value="italiana">Italiana</option>
-                        <option value="giapponese">Giapponese</option>
-                        <option value="messicana">Messicana</option>
-                        <option value="cinese">Cinese</option>
-                        <option value="indiana">Indiana</option>
-                    </select>
-                    <small class="text-muted">Tieni premuto Ctrl/Cmd per selezionare più opzioni</small>
-                </div>
-                <div class="form-check mb-3">
-                    <input type="checkbox" class="form-check-input" id="showOffers">
-                    <label class="form-check-label" for="showOffers">Mostra offerte speciali</label>
-                </div>
-                    <hr class="my-4">
-                    <button type="submit" class="btn btn-primary">Salva modifiche</button>
+                        <div class="col-12"><h6 class="mt-2 mb-0">Indirizzo</h6></div>
+                        <div class="col-12">
+                            <label for="street" class="form-label">Strada</label>
+                            <input type="text" class="form-control" id="street">
+                        </div>
+                        <div class="col-md-5">
+                            <label for="city" class="form-label">Città</label>
+                            <input type="text" class="form-control" id="city">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="zip" class="form-label">CAP</label>
+                            <input type="text" class="form-control" id="zip">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="country" class="form-label">Paese</label>
+                            <input type="text" class="form-control" id="country">
+                        </div>
+                        <div class="col-12 text-end">
+                            <button type="submit" class="btn-add"><i class="bi bi-check-circle me-1"></i>Salva profilo</button>
+                        </div>
+                    </div>
                 </form>
 
-                <hr class="my-4">
+                <div class="mt-4 p-4 rounded-4" style="background: rgba(255, 20, 147, 0.08); border: 1px solid var(--ss-pink);">
+                    <h6 style="color: var(--ss-pink);"><i class="bi bi-exclamation-triangle me-1"></i>Zona pericolo</h6>
+                    <p class="text-muted small mb-2">Cancellando l'account perderai tutti i tuoi dati e ordini.</p>
+                    <button id="deleteBtn" class="btn btn-outline-danger btn-sm">
+                        <i class="bi bi-trash me-1"></i>Cancella account
+                    </button>
+                </div>
+            </div>
 
-                <h2 class="section-title">Carta di Credito</h2>
-                <form id="creditCardForm">
+            <!-- TAB PREFERENZE -->
+            <div class="tab-pane fade" id="pane-prefs" role="tabpanel">
+                <form id="prefsForm" class="p-4 rounded-4" style="background: var(--ss-navy-light);">
                     <div class="mb-3">
-                        <label for="cardHolder" class="form-label">Titolare</label>
-                        <input type="text" class="form-control" id="cardHolder">
+                        <label for="cuisineType" class="form-label">Cucina preferita</label>
+                        <select class="form-select" id="cuisineType" multiple size="6">
+                            <option value="italiana">Italiana</option>
+                            <option value="giapponese">Giapponese</option>
+                            <option value="messicana">Messicana</option>
+                            <option value="cinese">Cinese</option>
+                            <option value="indiana">Indiana</option>
+                        </select>
+                        <small class="text-muted">Tieni premuto Ctrl/Cmd per selezionare più opzioni</small>
                     </div>
-                    <div class="mb-3">
-                        <label for="cardNumber" class="form-label">Numero di carta</label>
-                        <input type="text" class="form-control" id="cardNumber">
+                    <div class="form-check mb-3">
+                        <input type="checkbox" class="form-check-input" id="showOffers">
+                        <label class="form-check-label" for="showOffers">Mostra offerte speciali</label>
                     </div>
-                    <div class="mb-3">
-                        <label for="expirationDate" class="form-label">Data di scadenza</label>
-                        <input type="text" class="form-control" id="expirationDate">
+                    <div class="text-end">
+                        <button type="submit" class="btn-add"><i class="bi bi-check-circle me-1"></i>Salva preferenze</button>
                     </div>
-                    <div class="mb-3">
-                        <label for="cvv" class="form-label">CVV</label>
-                        <input type="text" class="form-control" id="cvv">
-                    </div>
-                    <button type="submit" class="btn btn-primary">Salva modifiche</button>
                 </form>
+            </div>
 
+            <!-- TAB CARTA -->
+            <div class="tab-pane fade" id="pane-card" role="tabpanel">
+                <form id="creditCardForm" class="p-4 rounded-4" style="background: var(--ss-navy-light);">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="cardHolder" class="form-label">Titolare</label>
+                            <input type="text" class="form-control" id="cardHolder">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="cardNumber" class="form-label">Numero di carta</label>
+                            <input type="text" class="form-control" id="cardNumber">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="expirationDate" class="form-label">Scadenza (MM/AA)</label>
+                            <input type="text" class="form-control" id="expirationDate">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="cvv" class="form-label">CVV</label>
+                            <input type="text" class="form-control" id="cvv">
+                        </div>
+                        <div class="col-12 text-end">
+                            <button type="submit" class="btn-add"><i class="bi bi-check-circle me-1"></i>Salva carta</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
 
-                <hr class="my-4">
-                <h5>Cambia password</h5>
-                <form id="passwordForm">
+            <!-- TAB PASSWORD -->
+            <div class="tab-pane fade" id="pane-password" role="tabpanel">
+                <form id="passwordForm" class="p-4 rounded-4" style="background: var(--ss-navy-light);">
                     <div class="mb-3">
                         <label for="oldPassword" class="form-label">Password attuale</label>
                         <input type="password" class="form-control" id="oldPassword" required>
@@ -123,15 +162,20 @@
                         <label for="confirmPassword" class="form-label">Conferma nuova password</label>
                         <input type="password" class="form-control" id="confirmPassword" required>
                     </div>
-                    <button type="submit" class="btn btn-primary">Cambia password</button>
-                </form>
-                <hr class="my-4">
-
-                <h5>Cancella Utente</h5>
-                <form id="deleteForm">
-                    <button type="submit" class="btn btn-danger">Cancella account</button>
+                    <div class="text-end">
+                        <button type="submit" class="btn-add"><i class="bi bi-check-circle me-1"></i>Cambia password</button>
+                    </div>
                 </form>
             </div>
+
+            <!-- TAB RECENSIONI -->
+            <div class="tab-pane fade" id="pane-reviews" role="tabpanel">
+                <div id="reviewsContainer"></div>
+                <p id="noReviews" class="text-center mt-5 d-none" style="color: var(--ss-gray);">
+                    Non hai ancora scritto recensioni.
+                </p>
+            </div>
+
         </div>
     </div>
 
@@ -143,189 +187,219 @@
             </div>
         </div>
     </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/js/auth.js"></script>
     <script>
-        // Se non loggato, torna alla homepage
         const token = localStorage.getItem('token');
         if (!token) window.location.href = '/';
 
-        // Pre-compila i campi dal token
-        const payload = JSON.parse(atob(token.split('.')[1]));
+        // Pre-popola tutti i campi dal profilo server-side
+        async function loadProfile() {
+            const res = await fetch('/api/auth/profile', {
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            const user = await res.json();
 
-        fetch('/api/auth/profile', {
-            headers: { 'Authorization': 'Bearer ' + token }
-        })
-        .then(r => r.json())
-        .then(user => {
-            document.getElementById('name').value = user.name || '';
-            document.getElementById('email').value = user.email || '';
-            // Indirizzo
-            document.getElementById('street').value = user.address?.street || '';
-            document.getElementById('city').value = user.address?.city || '';
+            document.getElementById('name').value    = user.name || '';
+            document.getElementById('email').value   = user.email || '';
+            document.getElementById('phone').value   = user.phone || '';
+            document.getElementById('street').value  = user.address?.street || '';
+            document.getElementById('city').value    = user.address?.city || '';
+            document.getElementById('zip').value     = user.address?.zip || '';
             document.getElementById('country').value = user.address?.country || '';
-            document.getElementById('zip').value = user.address?.zip || '';
-            document.getElementById('phone').value = user.address?.phone || '';
-            // Carta
-            document.getElementById('cardHolder').value = user.credit_card?.holder || '';
-            document.getElementById('cardNumber').value = user.credit_card?.number || '';
-            document.getElementById('expirationDate').value = user.credit_card?.expiration || '';
-            document.getElementById('cvv').value = user.credit_card?.cvv || '';
-            // Preferenze
+
+            document.getElementById('cardHolder').value      = user.credit_card?.holder || '';
+            document.getElementById('cardNumber').value      = user.credit_card?.number || '';
+            document.getElementById('expirationDate').value  = user.credit_card?.expiration || '';
+            document.getElementById('cvv').value             = user.credit_card?.cvv || '';
+
             document.getElementById('showOffers').checked = user.preferenze?.offerte || false;
             const select = document.getElementById('cuisineType');
             (user.preferenze?.cucina || []).forEach(c => {
                 const opt = select.querySelector(`option[value="${c}"]`);
                 if (opt) opt.selected = true;
             });
-        });
+        }
 
-
-        // Form modifica profilo
+        // PROFILO
         document.getElementById('profileForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-
-            const name = document.getElementById('name').value;
-            const email = document.getElementById('email').value;
-            // indirizzo
-            const street = document.getElementById('street').value;
-            const city = document.getElementById('city').value;
-            const country = document.getElementById('country').value;
-            const zip = document.getElementById('zip').value;
-            const phone = document.getElementById('phone').value;
-            //carta di credito
-            const cardNumber = document.getElementById('cardNumber').value;
-            const expirationDate = document.getElementById('expirationDate').value;
-            const cvv = document.getElementById('cvv').value;
-            // Preferenze
-            const showOffers = document.getElementById('showOffers').checked;
-            const cuisineType = Array.from(document.querySelectorAll('#cuisineType option:checked')).map(o => o.value);
-
+            const payload = {
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                address: {
+                    street:  document.getElementById('street').value,
+                    city:    document.getElementById('city').value,
+                    zip:     document.getElementById('zip').value,
+                    country: document.getElementById('country').value
+                }
+            };
             const res = await fetch('/api/auth/profile', {
                 method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + token
-                },
-                body: JSON.stringify({ name, email,
-                    address: {
-                        street: document.getElementById('street').value,
-                        city: document.getElementById('city').value,    
-                        country: document.getElementById('country').value,
-                        zip: document.getElementById('zip').value,
-                        phone: document.getElementById('phone').value
-                    },
-                    credit_card: {
-                        holder: document.getElementById('cardHolder').value,
-                        number: document.getElementById('cardNumber').value,
-                        expiration: document.getElementById('expirationDate').value,
-                        cvv: document.getElementById('cvv').value
-                    },
-                    preferenze: {
-                        cucina: Array.from(document.getElementById('cuisineType').selectedOptions).map(o => o.value),
-                        offerte: document.getElementById('showOffers').checked
-                    }
-                 })
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                body: JSON.stringify(payload)
             });
-
             const data = await res.json();
-
             if (res.ok) {
-                localStorage.setItem('token', data.token);
+                if (data.token) localStorage.setItem('token', data.token);
                 showToast('Profilo aggiornato');
-                window.location.reload();
             } else {
-                showToast(data.error, false);
+                showToast(data.error || 'Errore', false);
             }
         });
 
-        // Form carta di credito
-        document.getElementById('creditCardForm').addEventListener('submit', async (e) => {
+        // PREFERENZE
+        document.getElementById('prefsForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const cardHolder = document.getElementById('cardHolder').value;
-            const cardNumber = document.getElementById('cardNumber').value;
-            const expirationDate = document.getElementById('expirationDate').value;
-            const cvv = document.getElementById('cvv').value;
-
+            const payload = {
+                preferenze: {
+                    cucina: Array.from(document.getElementById('cuisineType').selectedOptions).map(o => o.value),
+                    offerte: document.getElementById('showOffers').checked
+                }
+            };
             const res = await fetch('/api/auth/profile', {
                 method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + token
-                },
-                body: JSON.stringify({ 
-                    credit_card: { 
-                        holder: cardHolder, 
-                        number: cardNumber, 
-                        expiration: expirationDate, 
-                        cvv: cvv 
-                    }
-                })
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                body: JSON.stringify(payload)
             });
-
             const data = await res.json();
+            if (res.ok) showToast('Preferenze aggiornate');
+            else showToast(data.error || 'Errore', false);
+        });
 
-            if (res.ok) {
-                showToast('Carta aggiornata');
-                window.location.reload();
-            } else {
-                showToast(data.error, false);
-            }
-        })
-        // Form cambio password
+        // CARTA
+        document.getElementById('creditCardForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const payload = {
+                credit_card: {
+                    holder:     document.getElementById('cardHolder').value,
+                    number:     document.getElementById('cardNumber').value,
+                    expiration: document.getElementById('expirationDate').value,
+                    cvv:        document.getElementById('cvv').value
+                }
+            };
+            const res = await fetch('/api/auth/profile', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            if (res.ok) showToast('Carta aggiornata');
+            else showToast(data.error || 'Errore', false);
+        });
+
+        // PASSWORD
         document.getElementById('passwordForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-
             const oldPassword = document.getElementById('oldPassword').value;
             const newPassword = document.getElementById('newPassword').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
-
             if (newPassword !== confirmPassword) {
-                showToast('Le password non coincidono');
+                showToast('Le password non coincidono', false);
                 return;
             }
-
             const res = await fetch('/api/auth/password', {
                 method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + token
-                },
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
                 body: JSON.stringify({ oldPassword, newPassword })
             });
-
             const data = await res.json();
-
             if (res.ok) {
                 showToast('Password aggiornata');
                 document.getElementById('passwordForm').reset();
             } else {
-                showToast(data.error, false);
+                showToast(data.error || 'Errore', false);
             }
         });
 
-        // Form cancella account
-        document.getElementById('deleteForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-
+        // CANCELLA ACCOUNT
+        document.getElementById('deleteBtn').addEventListener('click', async () => {
+            if (!confirm('Sei sicuro? Questa azione è irreversibile.')) return;
             const res = await fetch('/api/auth/delete', {
                 method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + token
-                }
+                headers: { 'Authorization': 'Bearer ' + token }
             });
-
-            const data = await res.json();
-
             if (res.ok) {
                 localStorage.removeItem('token');
-                showToast('Account cancellato');
                 window.location.href = '/';
             } else {
-                showToast(data.error, false);
+                const data = await res.json().catch(() => ({}));
+                showToast(data.error || 'Errore', false);
             }
         });
+
+        // RECENSIONI
+        function renderStars(rating) {
+            let html = '';
+            for (let i = 1; i <= 5; i++) {
+                html += i <= rating
+                    ? '<i class="bi bi-star-fill text-warning"></i>'
+                    : '<i class="bi bi-star text-muted"></i>';
+            }
+            return html;
+        }
+
+        async function loadReviews() {
+            const container = document.getElementById('reviewsContainer');
+            const noMsg = document.getElementById('noReviews');
+            const res = await fetch('/api/reviews/mine', {
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            if (!res.ok) {
+                container.innerHTML = '';
+                noMsg.textContent = 'Errore nel caricare le recensioni';
+                noMsg.classList.remove('d-none');
+                return;
+            }
+            const reviews = await res.json();
+            if (reviews.length === 0) {
+                container.innerHTML = '';
+                noMsg.classList.remove('d-none');
+                return;
+            }
+            noMsg.classList.add('d-none');
+            container.innerHTML = reviews.map(r => `
+                <div class="cart-card card mb-3">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <h6 class="mb-1">${r.restaurant?.name || 'Ristorante'}</h6>
+                                <p class="text-muted small mb-1">
+                                    ${new Date(r.createdAt).toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                                </p>
+                            </div>
+                            <div>${renderStars(r.rating)}</div>
+                        </div>
+                        ${r.comment ? `<p class="mb-2 small">${r.comment}</p>` : ''}
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteReview('${r._id}')">
+                            <i class="bi bi-trash me-1"></i>Elimina
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function deleteReview(reviewId) {
+            if (!confirm('Eliminare questa recensione?')) return;
+            const res = await fetch(`/api/reviews/${reviewId}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            if (res.ok) {
+                showToast('Recensione eliminata');
+                loadReviews();
+            } else {
+                const data = await res.json().catch(() => ({}));
+                showToast(data.error || 'Errore', false);
+            }
+        }
+
+        // Carica le recensioni solo quando l'utente apre il tab (lazy load)
+        document.getElementById('tab-reviews').addEventListener('shown.bs.tab', loadReviews);
+
+        loadProfile();
     </script>
 </body>
 </html>

@@ -330,6 +330,18 @@
 
             new bootstrap.Modal(document.getElementById('checkoutModal')).show();
         }
+
+        function removeFromCart(id) {
+            const cart = JSON.parse(localStorage.getItem('cart')) || [];
+            const idx = cart.findIndex(i => i.id === id);
+            if (idx !== -1) {
+                cart.splice(idx, 1);
+                localStorage.setItem('cart', JSON.stringify(cart));
+                updateCartBadge();
+                renderCart();
+            }
+        }
+
         function   changeCartQty(id, delta) {
             const cart = JSON.parse(localStorage.getItem('cart')) || [];
             const idx = cart.findIndex(i => i.id === id);

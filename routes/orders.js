@@ -136,20 +136,36 @@ router.get('/', auth, async (req, res) => {
 router.get('/restaurant', auth, async (req, res) => {
     try {
         const restaurant = await Restaurant.findOne({ owner: req.user.id });
+        let orders;
         if (!restaurant) return res.status(404).json({ error: 'Ristorante non trovato' });
-
-        const baseDate = req.query.date ? new Date(req.query.date) : new Date();
-        const startOfDay = new Date(baseDate);
-        startOfDay.setHours(0, 0, 0, 0);
-        const endOfDay = new Date(baseDate);
-        endOfDay.setHours(23, 59, 59, 999);
-
-        const orders = await Order.find({
-            restaurant: restaurant._id,
-            date: { $gte: startOfDay, $lte: endOfDay }
-        })
-        .sort({ date: -1 })
-        .populate('items.menuItem', 'strMeal');
+            if (req.query.date) {
+                const baseDate = req.query.date ? new Date(req.query.date) : new Date();
+                const startOfDay = new Date(baseDate);
+                startOfDay.setHours(0, 0, 0, 0);
+                const endOfDay = new Date(baseDate);
+                endOfDay.setHours(23, 59, 59, 999);
+                orders = await Order.find({
+                restaurant: restaurant._id,
+                date: { $gte: startOfDay, $lte: endOfDay }
+            })
+            .sort({ date: -1 })
+            .populate('items.menuItem', 'strMeal strMealThumb');
+        } else if (req.query.from  && req.query.to) {
+            const from = new Date(req.query.from);
+            from.setHours(0, 0, 0, 0);
+            const to = new Date(req.query.to);
+            to.setHours(23, 59, 59, 999);
+            orders = await Order.find({
+                restaurant: restaurant._id,
+                date: { $gte: from, $lte: to }  
+            })
+            .sort({ date: -1 })
+            .populate('items.menuItem', 'strMeal strMealThumb');
+        } else {
+            orders = await Order.find({ restaurant: restaurant._id })
+            .sort({ date: -1 })
+            .populate('items.menuItem', 'strMeal strMealThumb');
+        }
 
         res.json(orders);
     } catch (error) {

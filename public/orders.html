@@ -19,10 +19,23 @@
     <div class="container py-5">
         <div class="d-flex justify-content-between align-items-end flex-wrap mb-4 gap-2">
             <h2 class="section-title mb-0">Ordini ricevuti</h2>
+        </div>  
+        <div class="d-flex justify-content-between align-items-end flex-wrap mb-4 gap-2">
+            <div class="d-flex align-items-center gap-2">
+                <div>
+                    <button id="yesterdayBtn" class="btn btn-outline-primary" style="max-width: 200px;">Ordini di Ieri</button>
+                </div>
+                <div>
+                    <button id="lastWeekBtn" class="btn btn-outline-primary" style="max-width: 200px;">Ultima Settimana</button>
+                </div>
+                <div>
+                    <button id="allOrdersBtn" class="btn btn-outline-primary" style="max-width: 200px;">Tutti gli ordini</button>
+                </div>
+            </div>
             <div class="d-flex align-items-center gap-2">
                 <label for="dateFilter" class="form-label mb-0" style="color: var(--ss-sand);">Giorno:</label>
                 <input type="date" id="dateFilter" class="form-control" style="max-width: 200px;">
-            </div>
+            </div>  
         </div>
         <div id="ordersList" class="row g-3"></div>
         <p id="noOrders" class="text-center mt-5 d-none" style="color: var(--ss-gray);">
@@ -78,16 +91,31 @@
             return `<i class="bi bi-shop me-1"></i>Ritiro al ristorante`;
         }
 
-        async function loadOrders() {
-            const date = document.getElementById('dateFilter').value;
+        async function loadOrders(what) {
+            const todayStr = new Date().toISOString().split('T')[0];
+            const daysAgoStr = (n) => {
+                const d = new Date();
+                d.setDate(d.getDate() - n);
+                return d.toISOString().split('T')[0];
+            };
+
+            let url = `/api/orders/restaurant?date=${todayStr}`;  // default: oggi
+
+            if (what === 'all') {
+                url = '/api/orders/restaurant';
+            } else if (what === 'yesterday') {
+                url = `/api/orders/restaurant?date=${daysAgoStr(1)}`;
+            } else if (what === 'week') {
+                url = `/api/orders/restaurant?from=${daysAgoStr(6)}&to=${todayStr}`;
+            } else if (what === 'date') {
+                const date = document.getElementById('dateFilter').value;
+                url = date ? `/api/orders/restaurant?date=${date}` : '/api/orders/restaurant';
+            }
             const list = document.getElementById('ordersList');
             const noMsg = document.getElementById('noOrders');
-
-            const url = date ? `/api/orders/restaurant?date=${date}` : '/api/orders/restaurant';
             const res = await fetch(url, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
-
             if (!res.ok) {
                 list.innerHTML = '';
                 noMsg.classList.remove('d-none');
@@ -116,7 +144,7 @@
                                 </div>
                                 ${statusBadge(order.status)}
                             </div>
-
+                            <p class="mb-1"><i class="bi bi-calendar me-1"></i>${new Date(order.date).toLocaleDateString(navigator.language)}</p>
                             <p class="small mb-1"><i class="bi bi-people me-1"></i>${order.people} ${order.people > 1 ? 'persone' : 'persona'}</p>
                             <p class="small mb-2">${deliveryInfo(order.delivery)}</p>
 
@@ -169,7 +197,10 @@
         // Init: default = oggi
         const today = new Date().toISOString().split('T')[0];
         document.getElementById('dateFilter').value = today;
-        document.getElementById('dateFilter').addEventListener('change', loadOrders);
+        document.getElementById('dateFilter').addEventListener('change', () => loadOrders('date'));
+        document.getElementById('yesterdayBtn').addEventListener('click', () => loadOrders('yesterday'));
+        document.getElementById('lastWeekBtn').addEventListener('click', () => loadOrders('week'));
+        document.getElementById('allOrdersBtn').addEventListener('click', () => loadOrders('all'));
 
         loadOrders();
     </script>

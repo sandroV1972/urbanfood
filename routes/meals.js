@@ -67,4 +67,32 @@ router.get('/', async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * 
+ * /api/menu-items/cousines:
+ *   get:
+ *     summary: Restituisce tutti i tipi di cucina
+ *     tags: [MenuItems]
+ *     responses:
+ *       200:
+ *         description: Lista dei tipi di cucina
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: string
+ */
+router.get('/cuisines', async (req, res) => {
+    try {
+        const cuisines = await Meal.distinct('strArea');
+        res.json(cuisines.filter(c => c).sort());
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Errore nel recupero dei tipi di cucina' });
+    }
+});
+
+
 module.exports = router;

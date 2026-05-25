@@ -148,6 +148,41 @@ router.get('/restaurant/:id', async (req, res) => {
 
 /**
  * @swagger
+ * /api/menu-items/cuisines:
+ *   get:
+ *     summary: Cucine disponibili del ristorante
+ *     tags: [MenuItems]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+*           description: Array delle cucine (strArea) distinte presenti nel menu
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items: { type: string }
+ *       401:
+ *         description: Token mancante o non valido
+ *       404:
+ *         description: Ristorante non trovato
+ *       500:
+ *         description: Errore server
+ */
+router.get('/cuisines', auth, async (req, res) => {
+    try {
+        const restaurant = await Restaurant.findOne({owner: req.user.id});
+        if (!restaurant) return res.status(404).json({ error: 'Ristorante non trovato' });
+        const cuisines = await MenuItem.distinct('strArea', {restaurant: restaurant._id});
+        res.json(cuisines);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Errore nella ricerca delle cucine' });
+    }
+});
+
+/**
+ * @swagger
  * /api/menu-items/{id}:
  *   get:
  *     summary: Dettaglio singolo piatto del menu
@@ -445,5 +480,6 @@ router.put('/:id', auth, upload.single('image'), async (req, res) => {
         res.status(500).json({ error: 'Errore nella modifica del piatto' });
     }
 });
+
 
 module.exports = router;

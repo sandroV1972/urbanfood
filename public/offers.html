@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SurfShack - Offerte</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+</head>
+<body>
+    <div id="navbar"></div>
+
+    <div class="container py-5">
+        <h2 class="section-title">Offerte del ristorante</h2>
+        <p class="section-subtitle">Crea offerte a tempo per attirare nuovi clienti</p>
+
+        <!-- Form creazione offerta -->
+        <form id="offerForm" class="p-4 rounded-4 mb-4" style="background: var(--ss-navy-light);">
+            <div class="row g-3">
+                <div class="col-md-8">
+                    <label for="description" class="form-label">Descrizione</label>
+                    <input type="text" class="form-control" id="description" placeholder="es. Sconto sui burger del weekend" required>
+                </div>
+                <div class="col-md-4">
+                    <label for="cuisineType" class="form-label">Cucina</label>
+                    <select class="form-select" id="cuisineType" required>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="discount" class="form-label">Sconto (%)</label>
+                    <input type="number" class="form-control" id="discount" min="1" max="100" placeholder="20" required>
+                </div>
+                <div class="col-md-4">
+                    <label for="start" class="form-label">Data inizio</label>
+                    <input type="date" class="form-control" id="start" required>
+                </div>
+                <div class="col-md-4">
+                    <label for="end" class="form-label">Data fine</label>
+                    <input type="date" class="form-control" id="end" required>
+                </div>
+                <div class="col-12 text-end">
+                    <button type="submit" id="offerFormBtn" class="btn-add">
+                        <i class="bi bi-plus-circle me-1"></i>Crea offerta
+                    </button>
+                </div>
+            </div>
+        </form>
+
+        <!-- Offerte attive -->
+        <h4 class="mb-3"><i class="bi bi-lightning-charge me-1" style="color: var(--ss-teal);"></i>Offerte attive</h4>
+        <div id="activeOffers" class="row g-3 mb-2"></div>
+        <p id="noActive" class="d-none mb-4" style="color: var(--ss-gray);">Nessuna offerta attiva.</p>
+
+        <hr class="my-4">
+
+        <!-- Offerte passate -->
+        <h4 class="mb-3"><i class="bi bi-clock-history me-1" style="color: var(--ss-gray);"></i>Offerte passate</h4>
+        <div id="pastOffers" class="row g-3"></div>
+        <p id="noPast" class="d-none" style="color: var(--ss-gray);">Nessuna offerta passata.</p>
+    </div>
+
+    <div class="toast-container position-fixed top-0 end-0 p-3">
+        <div id="toastMessage" class="toast align-items-center border-0" role="alert">
+            <div class="d-flex">
+                <div class="toast-body"></div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/auth.js"></script>
+    <script>
+        const token = localStorage.getItem('token');
+        if (!token) window.location.href = '/';
+
+        const role = JSON.parse(atob(token.split('.')[1])).usrType;
+        if (role !== 'ristoratore') window.location.href = '/';
+
+        function formatDate(dateString) {
+            return new Date(dateString).toLocaleDateString('it-IT', {
+                day: '2-digit', month: '2-digit', year: 'numeric'
+            });
+        }
+
+        function offerCard(offer, isPast) {
+            const categoryLabel = offer.category === 'Tutte'
+                ? 'Tutte le categorie'
+                : offer.category;
+            return `
+                <div class="col-12 col-md-6 col-lg-4">
+                    <div class="cart-card card h-100 ${isPast ? 'opacity-75' : ''}">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <span class="badge ${isPast ? 'bg-secondary' : 'bg-success'}">
+                                    -${offer.discount}%
+                                </span>
+                                <button class="btn btn-sm btn-link text-danger p-0" onclick="deleteOffer('${offer._id}')">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                            <p class="mb-1">${offer.description}</p>
+                            <p class="small mb-1" style="color: var(--ss-teal);">
+                                <i class="bi bi-tag me-1"></i>${categoryLabel}
+                            </p>
+                            <p class="text-muted small mb-0">
+                                <i class="bi bi-calendar-range me-1"></i>
+                                ${formatDate(offer.start)} → ${formatDate(offer.end)}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function loadCuisines() { 
+            const res = await fetch('/api/menu-items/cuisines', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const cuisines = await res.json();
+            const select = document.getElementById('cuisineType');
+            cuisines.forEach(c => {
+                const option = document.createElement('option');
+                option.value = c;
+                option.text = c;
+                select.add(option);
+            });
+        } 
+        
+        // No need to load
+        async function loadOffers() {
+            const res = await fetch('/api/offers/mine', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (!res.ok) {
+                showToast('Errore nel caricamento delle offerte', false);
+                return;
+            }
+
+            const offers = await res.json();
+            const now = new Date();
+
+            // Un'offerta è "passata" se la data di fine è già trascorsa
+            const active = offers.filter(o => new Date(o.end) >= now);
+            const past   = offers.filter(o => new Date(o.end) < now);
+
+            const activeContainer = document.getElementById('activeOffers');
+            const pastContainer   = document.getElementById('pastOffers');
+
+            activeContainer.innerHTML = active.map(o => offerCard(o, false)).join('');
+            pastContainer.innerHTML   = past.map(o => offerCard(o, true)).join('');
+
+            document.getElementById('noActive').classList.toggle('d-none', active.length > 0);
+            document.getElementById('noPast').classList.toggle('d-none', past.length > 0);
+        }
+
+        document.getElementById('offerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const description = document.getElementById('description').value.trim();
+            const category = document.getElementById('cuisineType').value;
+            const discount = Number(document.getElementById('discount').value);
+            const start = document.getElementById('start').value;
+            const end = document.getElementById('end').value;
+
+            // Validazione: la fine non può precedere l'inizio
+            if (new Date(end) < new Date(start)) {
+                showToast('La data di fine deve essere successiva a quella di inizio', false);
+                return;
+            }
+
+            const res = await fetch('/api/offers', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ description, discount, category, start, end })
+            });
+
+            if (res.ok) {
+                showToast('Offerta creata');
+                document.getElementById('offerForm').reset();
+                loadOffers();
+            } else {
+                const data = await res.json().catch(() => ({}));
+                showToast(data.error || 'Errore nella creazione', false);
+            }
+        });
+
+        async function deleteOffer(offerId) {
+            if (!confirm('Eliminare questa offerta?')) return;
+            const res = await fetch(`/api/offers/${offerId}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (res.ok) {
+                showToast('Offerta eliminata');
+                loadOffers();
+            } else {
+                const data = await res.json().catch(() => ({}));
+                showToast(data.error || 'Errore', false);
+            }
+        }
+
+        loadCuisines();
+        loadOffers();
+    </script>
+</body>
+</html>

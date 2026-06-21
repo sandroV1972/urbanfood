@@ -156,7 +156,7 @@ router.get('/restaurant/:id', async (req, res) => {
  *       - bearerAuth: []
  *     responses:
  *       200:
-*           description: Array delle cucine (strArea) distinte presenti nel menu
+ *         description: Array delle cucine (strArea) distinte presenti nel menu
  *         content:
  *           application/json:
  *             schema:

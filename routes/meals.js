@@ -70,7 +70,7 @@ router.get('/', async (req, res) => {
 /**
  * @swagger
  * 
- * /api/menu-items/cousines:
+ * /api/meals/cousines:
  *   get:
  *     summary: Restituisce tutti i tipi di cucina
  *     tags: [MenuItems]
@@ -93,6 +93,39 @@ router.get('/cuisines', async (req, res) => {
         res.status(500).json({ error: 'Errore nel recupero dei tipi di cucina' });
     }
 });
-
+/**
+ * @swagger
+ * /api/meals/categories:
+ * 
+ * 
+ *   get:
+ *     summary: Tipologie di Piatti disponibili
+ *     tags: [Meals]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Array dei tipi di piatti (strCategory) distinti presenti
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items: { type: string }
+ *       401:
+ *         description: Token mancante o non valido
+ *       404:
+ *         description: Ristorante non trovato
+ *       500:
+ *         description: Errore server
+ */
+router.get('/categories', async (req, res) => {
+    try {
+        const categories = await Meal.distinct('strCategory');
+        res.json(categories.filter(c => c).sort());
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Errore nella ricerca dei piatti' });
+    }
+});
 
 module.exports = router;

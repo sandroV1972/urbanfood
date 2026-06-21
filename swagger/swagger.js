@@ -140,6 +140,21 @@ const options = {
                     }
                 }
             },
+            Offer: {
+                type: 'object',
+                properties: {
+                    _id:         { type: 'string' },
+                    restaurant:  { type: 'string', description: 'ID del ristorante' },
+                    description: { type: 'string' },
+                    discount:    { type: 'number', minimum: 0, maximum: 100 },
+                    category:    { type: 'string', description: 'Cucina target o "Tutte"' },
+                    start:       { type: 'string', format: 'date-time' },
+                    end:         { type: 'string', format: 'date-time' },
+                    createdAt:   { type: 'string', format: 'date-time' },
+                    updatedAt:   { type: 'string', format: 'date-time' }
+                },
+                required: ['restaurant', 'description', 'discount', 'category', 'start', 'end']
+            },
             AuthResponse: {
                 type: 'object',
                 properties: {

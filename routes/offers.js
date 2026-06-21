@@ -2,6 +2,7 @@ const router = require('express').Router();
 const Offer = require('../models/Offer');
 const Restaurant = require('../models/Restaurant');
 const auth = require('../middleware/auth');
+const User = require('../models/User');
 
 /**
  * @swagger
@@ -183,6 +184,61 @@ router.post('/', auth, async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Errore nella creazione dell\'offerta' });
+    }
+});
+
+/**
+ * @swagger
+ * /api/offers/myOffers:
+ *   get:
+ *     summary: Ritorna le offerte adatte a un determinato cliente
+ *     tags: [Offers]
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID MongoDB del cliente
+ *     responses:
+ *       200:
+ *         description: Array delle offerte
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Offer'
+ *       500:
+ *         description: Errore server
+ */
+router.get('/myOffers', auth, async (req, res) => {
+    // Ritorna le offerte attive che matchano le preferenze del cliente loggato.
+    // Se l'utente non è cliente, non ha attivato le offerte, o non ha categorie
+    // preferite, ritorna array vuoto (non è un errore, è solo "niente da mostrare").
+    try {
+        const user = await User.findById(req.user.id, 'preferenze usrType');
+
+        if (user.usrType !== 'cliente')   return res.json([]);
+        if (!user.preferenze?.offerte)    return res.json([]);
+
+        const categories = user.preferenze.categorie || [];
+        if (categories.length === 0)      return res.json([]);
+
+        const now = new Date();
+        const offers = await Offer.find({
+            start: { $lte: now },
+            end:   { $gte: now },
+            $or: [
+                { category: { $in: categories } },
+                { category: 'Tutte' }
+            ]
+        }).populate('restaurant', 'name image');
+
+        res.json(offers);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Errore nel recupero delle offerte personalizzate' });
     }
 });
 

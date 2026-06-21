@@ -117,7 +117,7 @@ router.get('/profile', auth, async (req, res) => {
  *               preferenze:
  *                 type: object
  *                 properties:
- *                   cucina:  { type: array, items: { type: string } }
+ *                   categorie:  { type: array, items: { type: string } }
  *                   offerte: { type: boolean }
  *     responses:
  *       200:

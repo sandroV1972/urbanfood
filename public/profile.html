@@ -24,12 +24,12 @@
                     <i class="bi bi-person me-1"></i>Profilo
                 </button>
             </li>
-            <li class="nav-item" role="presentation">
+            <li class="nav-item" role="presentation" data-role="cliente">
                 <button class="nav-link" id="tab-prefs" data-bs-toggle="tab" data-bs-target="#pane-prefs" type="button" role="tab">
                     <i class="bi bi-heart me-1"></i>Preferenze
                 </button>
             </li>
-            <li class="nav-item" role="presentation">
+            <li class="nav-item" role="presentation" data-role="cliente">
                 <button class="nav-link" id="tab-card" data-bs-toggle="tab" data-bs-target="#pane-card" type="button" role="tab">
                     <i class="bi bi-credit-card me-1"></i>Carta
                 </button>
@@ -39,7 +39,7 @@
                     <i class="bi bi-key me-1"></i>Password
                 </button>
             </li>
-            <li class="nav-item" role="presentation">
+            <li class="nav-item" role="presentation" data-role="cliente">
                 <button class="nav-link" id="tab-reviews" data-bs-toggle="tab" data-bs-target="#pane-reviews" type="button" role="tab">
                     <i class="bi bi-star me-1"></i>Le mie recensioni
                 </button>
@@ -100,13 +100,8 @@
             <div class="tab-pane fade" id="pane-prefs" role="tabpanel">
                 <form id="prefsForm" class="p-4 rounded-4" style="background: var(--ss-navy-light);">
                     <div class="mb-3">
-                        <label for="cuisineType" class="form-label">Cucina preferita</label>
-                        <select class="form-select" id="cuisineType" multiple size="6">
-                            <option value="italiana">Italiana</option>
-                            <option value="giapponese">Giapponese</option>
-                            <option value="messicana">Messicana</option>
-                            <option value="cinese">Cinese</option>
-                            <option value="indiana">Indiana</option>
+                        <label for="categoryType" class="form-label">Piatti preferiti</label>
+                        <select class="form-select" id="categoryType" multiple size="6">
                         </select>
                         <small class="text-muted">Tieni premuto Ctrl/Cmd per selezionare più opzioni</small>
                     </div>
@@ -194,6 +189,7 @@
         const token = localStorage.getItem('token');
         if (!token) window.location.href = '/';
 
+        const role = JSON.parse(atob(token.split('.')[1])).usrType;
         // Pre-popola tutti i campi dal profilo server-side
         async function loadProfile() {
             const res = await fetch('/api/auth/profile', {
@@ -215,8 +211,8 @@
             document.getElementById('cvv').value             = user.credit_card?.cvv || '';
 
             document.getElementById('showOffers').checked = user.preferenze?.offerte || false;
-            const select = document.getElementById('cuisineType');
-            (user.preferenze?.cucina || []).forEach(c => {
+            const select = document.getElementById('categoryType');
+            (user.preferenze?.categorie || []).forEach(c => {
                 const opt = select.querySelector(`option[value="${c}"]`);
                 if (opt) opt.selected = true;
             });
@@ -251,11 +247,29 @@
         });
 
         // PREFERENZE
+        async function loadFoodCategories() {
+            const res = await fetch('/api/meals/categories', {
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            if (!res.ok) {
+                console.error('Errore caricamento categorie');
+                return;
+            } 
+            const categories = await res.json();
+            const select = document.getElementById('categoryType');
+
+            categories.forEach(c => {
+                const option = document.createElement('option');
+                option.value = c;
+                option.text = c;
+                select.add(option);
+            });
+        }
         document.getElementById('prefsForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const payload = {
                 preferenze: {
-                    cucina: Array.from(document.getElementById('cuisineType').selectedOptions).map(o => o.value),
+                    categorie: Array.from(document.getElementById('categoryType').selectedOptions).map(o => o.value),
                     offerte: document.getElementById('showOffers').checked
                 }
             };
@@ -400,6 +414,8 @@
         document.getElementById('tab-reviews').addEventListener('shown.bs.tab', loadReviews);
 
         loadProfile();
+        loadFoodCategories(); 
+        loadReviews();
     </script>
 </body>
 </html>

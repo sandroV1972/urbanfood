@@ -55,6 +55,7 @@ dinamica** generata via `data-role` su `navbar.html` e gestita da `auth.js`:
 | `/restaurants` | `restaurants.html` | Ristoratore | Gestione ristorante e menu (CRUD piatti) |
 | `/orders` | `orders.html` | Ristoratore | Ordini ricevuti con filtri (oggi, ieri, settimana, range, tutti) |
 | `/stats` | `stats.html` | Ristoratore | KPI cards, top piatti, fatturato 7gg, ordini per stato |
+| `/offers` | `offers.html` | Ristoratore | Creazione/visualizzazione offerte (attive e passate) per cucina |
 
 ### Componenti condivisi
 
@@ -85,7 +86,8 @@ progetto/
 │   ├── MenuItem.js            # restaurant -> Restaurant
 │   ├── Meal.js                # catalogo comune (read-only per ristoratori)
 │   ├── Order.js               # cliente, ristorante, items, delivery, status
-│   └── Reviews.js             # user, restaurant, rating, comment (unique compound)
+│   ├── Reviews.js             # user, restaurant, rating, comment (unique compound)
+│   └── Offer.js               # restaurant, description, discount, category, start, end
 │
 ├── routes/
 │   ├── auth.js                # register, login, profile, password, delete
@@ -95,6 +97,7 @@ progetto/
 │   ├── orders.js              # CRUD ordini cliente/ristorante + status
 │   ├── reviews.js             # CRUD recensioni
 │   ├── stats.js               # Aggregazioni statistiche ristorante
+│   ├── offers.js              # CRUD offerte
 │   └── index.js               # Mount delle sotto-route
 │
 ├── middleware/
@@ -120,6 +123,7 @@ progetto/
     ├── search.html            # Ricerca ristoranti/piatti (cliente)
     ├── profile.html           # Profilo utente
     ├── stats.html             # Statistiche (ristoratore)
+    ├── offers.html            # Gestione offerte (ristoratore)
     ├── components/navbar.html
     ├── css/style.css
     └── js/auth.js
@@ -301,6 +305,31 @@ prezzo definito dal ristoratore.
 - Vincolo applicativo: per creare una recensione l'utente deve avere almeno un Order
   con `status === 'consegnato'` da quel ristorante.
 
+### 4.7 Collezione `offers` (offerte ristorante)
+
+```json
+{
+  "_id": "ObjectId",
+  "restaurant": "ObjectId ref Restaurant",
+  "description": "Sconto 20% sulla cucina italiana",
+  "discount": 20,
+  "category": "Italian",
+  "start": "2026-05-15T00:00:00Z",
+  "end":   "2026-05-31T23:59:59Z",
+  "createdAt": "Date",
+  "updatedAt": "Date"
+}
+```
+
+- `restaurant`: riferimento al ristorante che ha creato l'offerta
+- `description`: testo libero mostrato al cliente
+- `discount`: percentuale di sconto (0-100)
+- `category`: cucina (`strArea`) a cui l'offerta si applica. Valore speciale `"Tutte"`
+  significa "tutte le cucine". Il dropdown nel form è popolato dinamicamente dalle cucine
+  effettivamente presenti nel menu del ristorante (via `GET /api/menu-items/cuisines`).
+- `start` / `end`: range temporale di validità. Un'offerta è considerata **attiva** se
+  `start <= now <= end`, **passata** se `end < now`.
+
 ---
 
 ## 5 Utenti e operazioni
@@ -452,6 +481,24 @@ Le recensioni dei clienti sono visibili sulla pagina pubblica del ristorante e n
 KPI rating (`stats.html`). Il ristoratore non può cancellare o modificare le
 recensioni — solo il cliente proprietario può farlo.
 
+#### 5.2.6 Gestione delle offerte
+
+Dalla pagina `/offers` il ristoratore può:
+
+- **Creare un'offerta** specificando descrizione, percentuale di sconto, cucina target
+  e range di date (inizio-fine). Il select della cucina è popolato dinamicamente con
+  le cucine effettivamente presenti nel suo menu (via `GET /api/menu-items/cuisines`),
+  con un'opzione speciale "Tutte le cucine" per estendere l'offerta a tutto il menu.
+- **Vedere le offerte attive** (sezione superiore con badge verde) — quelle il cui
+  range `start-end` comprende la data odierna.
+- **Vedere le offerte passate** (sezione inferiore con badge grigio e opacità ridotta)
+  — quelle con `end < now`.
+- **Eliminare** un'offerta tramite il bottone cestino sulla card (con conferma e
+  check ownership server-side).
+
+Validazione: la data di fine deve essere successiva o uguale a quella di inizio,
+sia client-side che server-side.
+
 ---
 
 ## 6 API REST (documentate su `/api-docs`)
@@ -488,6 +535,7 @@ montato su `/api-docs`. La security scheme è `bearerAuth` (JWT in header
 | GET | `/` | Sì (ristoratore) | ✅ |
 | GET | `/restaurant/:id` | No | ✅ |
 | GET | `/search?name=&category=&minPrice=&maxPrice=` | Sì | ✅ |
+| GET | `/cuisines` | Sì (ristoratore) | ✅ — distinct strArea del proprio menu |
 | GET | `/:id` | Sì | ✅ |
 | POST | `/from-catalog` | Sì (ristoratore) | ✅ |
 | POST | `/` | Sì (multipart) | ✅ |
@@ -499,6 +547,7 @@ montato su `/api-docs`. La security scheme è `bearerAuth` (JWT in header
 |---|---|---|---|
 | GET | `/` | No | ✅ |
 | GET | `/random` | No | ✅ |
+| GET | `/cuisines` | No | ✅ — distinct strArea del catalogo globale |
 
 ### Orders (`/api/orders`)
 | Metodo | Endpoint | Auth | Stato |
@@ -529,6 +578,16 @@ montato su `/api-docs`. La security scheme è `bearerAuth` (JWT in header
 | Metodo | Endpoint | Auth | Stato |
 |---|---|---|---|
 | GET | `/restaurant` | Sì (ristoratore) | ✅ |
+
+### Offers (`/api/offers`)
+| Metodo | Endpoint | Auth | Stato |
+|---|---|---|---|
+| GET | `/` | No | ✅ — tutte le offerte |
+| GET | `/mine` | Sì (ristoratore) | ✅ — proprie (attive + passate) |
+| GET | `/restaurant/:id` | No | ✅ — solo offerte attive di un ristorante |
+| GET | `/:id` | No | ✅ — dettaglio offerta |
+| POST | `/` | Sì (ristoratore) | ✅ — crea offerta (description, discount, category, start, end) |
+| DELETE | `/:id` | Sì (proprietario) | ✅ — con check ownership |
 
 ---
 
@@ -568,6 +627,16 @@ montato su `/api-docs`. La security scheme è `bearerAuth` (JWT in header
   - `$lookup` su menuitems per recuperare i nomi
   - `$dateToString` per fatturato giornaliero
   - Riempimento manuale dei giorni mancanti (per avere 7 punti continui nel grafico)
+
+### 7.6 Offerte ristorante ✅
+- Modello `Offer` legato al ristorante con cucina target, sconto % e range di date
+- Endpoint dedicati (`/api/offers`) con check ownership
+- Dropdown cucina **dinamica** nel form: popolata da `GET /api/menu-items/cuisines`
+  (restituisce solo le cucine effettivamente presenti nel menu del ristorante via
+  `MenuItem.distinct('strArea', { restaurant })`)
+- Distinzione attive/passate calcolata client-side confrontando `end` con `now`
+- Valore speciale `"Tutte"` per offerte estese a tutte le cucine del menu
+- Validazione `end >= start` sia client che server
 
 ---
 
@@ -659,7 +728,9 @@ Per rigenerare lo stato da zero, droppare le collections `users`, `restaurants`,
 | Mappa ristorante (Leaflet) | ✅ Completo |
 | Recensioni | ✅ Completo |
 | Statistiche ristorante | ✅ Completo |
+| Offerte ristorante | ✅ Completo |
 | Ricerca piatti per ingredienti/allergie | ⏳ Non iniziato |
+| Offerte personalizzate in home/search (per preferenza utente) | ⏳ Non iniziato |
 | Relazione PDF + screenshot | ⏳ Non iniziato |
 
 ---
@@ -668,6 +739,8 @@ Per rigenerare lo stato da zero, droppare le collections `users`, `restaurants`,
 
 ### Implementazione (opzionale)
 - [ ] Ricerca piatti per ingredienti / allergie (filtro escludente)
+- [ ] Sezione "Offerte per te" in home/search filtrata per `user.preferenze.cucina`
+      e `user.preferenze.offerte === true`
 - [ ] Tempo di attesa stimato in coda
 
 ### Documentazione
@@ -712,6 +785,6 @@ npm install
 npm start
 ```
 
-Il server parte su `http://localhost:3000` (o la porta in `.env`).
-- Sito: `http://localhost:3000/`
-- Swagger UI: `http://localhost:3000/api-docs`
+Il server parte su `http://localhost:4001` (o la porta in `.env`).
+- Sito: `http://localhost:4001/`
+- Swagger UI: `http://localhost:4001/api-docs`

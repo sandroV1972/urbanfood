@@ -49,6 +49,14 @@
             </div>
         </div>
     </section>
+    <!-- ============ OFFERTE ============ --> 
+    <section class="py-5 d-none" id="offers">
+        <div class="container">
+            <h2 class="section-title">Offerte del giorno</h2>
+            <p class="section-subtitle">Ecco le offerte a te dedicate</p>
+            <div class="row g-4" id="offersContainer"></div>
+        </div>    
+    </section>  
     <!-- ============ CATEGORIE ============ -->
     <section class="py-5" id="menu">
         <div class="container">
@@ -123,6 +131,21 @@
     <!-- Custom JS auth.per controllare se l'utente sta loggato -->
     <script src="/js/auth.js"></script>
     <script>
+                // Redirect ristoratore alla dashboard se già loggato
+        const token = localStorage.getItem('token');
+        if (token) {
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            if (payload.usrType === 'ristoratore') {
+                window.location.href = '/dashboard';
+            } else {
+                document.getElementById('benvenuto').classList.add('d-none');
+            }
+        } else {
+             document.getElementById('testoBenvenuto').insertAdjacentHTML('beforeend', `
+                <div class="text-center mt-4">
+                    <a href="./register" class="btn btn-primary">Registrati</a>
+                </div>`);
+        }
         // Ritorna il link casuale a un piatto da meal per immagini casuali nella home
         function getRandomMealLink() {
             return fetch('/api/meals/random')
@@ -131,6 +154,39 @@
                     document.getElementById('welcomeMealImg').src = data[0].strMealThumb;
                 })
                 .catch(error => console.error(error)); 
+        }
+        async function loadOffers(){
+            const res = await fetch('/api/offers/myOffers', {
+                method: 'GET',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (!res.ok) {
+                return;
+            } 
+            const offers = await res.json();
+            if (offers.length === 0) return;
+
+            // se ci sono offerte popola e mostra la sezione
+            document.getElementById('offersContainer').innerHTML = offers.map(offer => `
+                <div class="col-12 col-md-6 col-lg-4">
+                    <div class="cart-card card h-100">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="badge bg-success">-${offer.discount}%</span>
+                                <small class="text-muted">
+                                    <i class="bi bi-tag me-1"></i>${offer.category}
+                                </small>
+                            </div>
+                            <h5 class="card-title">${offer.description}</h5>
+                            <p class="card-text small text-muted mb-0">
+                                <i class="bi bi-shop me-1"></i>${offer.restaurant?.name || 'Ristorante'}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            document.getElementById('offers').classList.remove('d-none');
+
         }
         function loadRestaurants() {
             return fetch('/api/restaurants')
@@ -155,23 +211,10 @@
                     });
                 })
         }
+        loadOffers();
         getRandomMealLink();
         loadRestaurants();
-        // Redirect ristoratore alla dashboard se già loggato
-        const token = localStorage.getItem('token');
-        if (token) {
-            const payload = JSON.parse(atob(token.split('.')[1]));
-            if (payload.usrType === 'ristoratore') {
-                window.location.href = '/dashboard';
-            } else {
-                document.getElementById('benvenuto').hidden = true;
-            }
-        } else {
-             document.getElementById('testoBenvenuto').insertAdjacentHTML('beforeend', `
-                <div class="text-center mt-4">
-                    <a href="./register" class="btn btn-primary">Registrati</a>
-                </div>`);
-        }
+
     </script>
 
 </body>

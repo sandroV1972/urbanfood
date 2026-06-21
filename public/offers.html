@@ -27,8 +27,8 @@
                     <input type="text" class="form-control" id="description" placeholder="es. Sconto sui burger del weekend" required>
                 </div>
                 <div class="col-md-4">
-                    <label for="cuisineType" class="form-label">Cucina</label>
-                    <select class="form-select" id="cuisineType" required>
+                    <label for="cuisineType" class="form-label">Categoria</label>
+                    <select class="form-select" id="categoryType" required>
                     </select>
                 </div>
                 <div class="col-md-4">
@@ -118,19 +118,24 @@
             `;
         }
 
-        async function loadCuisines() { 
-            const res = await fetch('/api/menu-items/cuisines', {
-                headers: { 'Authorization': `Bearer ${token}` }
+        async function loadFoodCategories() {
+            const res = await fetch('/api/meals/categories', {
+                headers: { 'Authorization': 'Bearer ' + token }
             });
-            const cuisines = await res.json();
-            const select = document.getElementById('cuisineType');
-            cuisines.forEach(c => {
+            if (!res.ok) {
+                console.error('Errore caricamento categorie');
+                return;
+            } 
+            const categories = await res.json();
+            const select = document.getElementById('categoryType');
+
+            categories.forEach(c => {
                 const option = document.createElement('option');
                 option.value = c;
                 option.text = c;
                 select.add(option);
             });
-        } 
+        }
         
         // No need to load
         async function loadOffers() {
@@ -164,7 +169,7 @@
             e.preventDefault();
 
             const description = document.getElementById('description').value.trim();
-            const category = document.getElementById('cuisineType').value;
+            const category = document.getElementById('categoryType').value;
             const discount = Number(document.getElementById('discount').value);
             const start = document.getElementById('start').value;
             const end = document.getElementById('end').value;
@@ -209,7 +214,7 @@
             }
         }
 
-        loadCuisines();
+        loadFoodCategories();
         loadOffers();
     </script>
 </body>

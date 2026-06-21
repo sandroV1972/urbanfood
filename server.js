@@ -8,11 +8,6 @@ const app = express();
 // Importa il modulo per la connessione al database
 const connectDB = require('./config/db');
 
-// Abilita CORS per tutte le richieste HTTP in entrata. Non serve se gira tutto su localhost:3000
-// ma e' utile se si vuole accedere da un client esterno
-const cors = require('cors');
-app.use(cors());
-
 const port = process.env.PORT || 3000; // Usa la porta definita dall'ambiente o 3000 di default
 
 // Connessione al database e seed iniziale (piatti, ristoranti, menu)
@@ -30,12 +25,6 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Definizione middleware pagine statiche
 app.use(express.static('public'));
-
-// Esempio di un'altra rotta (GET /api/saluto)
-app.get('/api/saluto', (req, res) => {
-  const nome = req.query.nome || 'Mondo'; // Prende il nome dai parametri query (es. /api/saluto?nome=Alice)
-  res.json({ messaggio: `Ciao, ${nome}!` });
-});
 
 // Rotte pagine senza .html
 app.get('/dashboard', (req, res) => {

@@ -43,7 +43,7 @@ const userSchema = new mongoose.Schema({
         cvv: { type: String, default: '' }
     },
     preferenze: {
-        cucina: { type: [String], default: [] },
+        categorie: { type: [String], default: [] },
         offerte: { type: Boolean, default: false } 
     }
 });

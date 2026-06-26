@@ -215,6 +215,16 @@
                 noResults.classList.add('d-none');
             });
         });
+
+        // Se l'URL contiene ?category=X (es. cliccando una card categoria in home),
+        // attiva la tab Piatti, precompila il filtro e lancia subito la ricerca.
+        const params = new URLSearchParams(window.location.search);
+        const initialCategory = params.get('category');
+        if (initialCategory) {
+            new bootstrap.Tab(document.getElementById('tab-dishes')).show();
+            document.getElementById('dCategory').value = initialCategory;
+            searchDishes();
+        }
     </script>
 </body>
 </html>

@@ -213,6 +213,7 @@
             document.getElementById('showOffers').checked = user.preferenze?.offerte || false;
             const select = document.getElementById('categoryType');
             (user.preferenze?.categorie || []).forEach(c => {
+                //const opt = select.querySelector(`option[value="${c}"]`);
                 const opt = select.querySelector(`option[value="${c}"]`);
                 if (opt) opt.selected = true;
             });
@@ -411,10 +412,8 @@
         }
 
         // Carica le recensioni solo quando l'utente apre il tab (lazy load)
-        document.getElementById('tab-reviews').addEventListener('shown.bs.tab', loadReviews);
-
-        loadProfile();
-        loadFoodCategories(); 
+        document.getElementById('tab-reviews').addEventListener('shown.bs.tab', loadReviews);  
+        loadFoodCategories().then(loadProfile()); 
         loadReviews();
     </script>
 </body>

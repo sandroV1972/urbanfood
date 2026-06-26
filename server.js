@@ -76,8 +76,6 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Si è verificato un errore' });
 });
 
-
-
 // Avvia il server
 app.listen(port, () => {
   console.log(`Server Node.js in ascolto sulla porta ${port}`);

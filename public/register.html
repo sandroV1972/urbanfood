@@ -40,8 +40,8 @@
                         <input type="password" class="form-control" id="password" placeholder="Inserisci la tua password">
                     </div>
                     <div class="mb-3">
-                        <label for="usrType" class="form-label">Ruolo</label>
-                        <select class="form-select" id="usrType" required>
+                        <label for="role" class="form-label">Ruolo</label>
+                        <select class="form-select" id="role" required>
                             <option selected disabled>Seleziona il tuo ruolo</option>
                             <option value="cliente">Cliente</option>
                             <option value="ristoratore">Ristoratore</option>
@@ -72,13 +72,13 @@
         const name = document.getElementById('name').value;
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
-        const usrType = document.getElementById('usrType').value;
+        const role = document.getElementById('role').value;
 
         // Invia i dati al server come JSON
         const res = await fetch('/api/auth/register', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name, email, password, usrType })
+            body: JSON.stringify({ name, email, password, usrType: role })
         });
 
         const data = await res.json();

@@ -26,6 +26,9 @@ const Meal = require('../models/Meal');
  */
 router.get('/random', async (req, res) => {
     try {
+        // usa una funzione di aggregazione per ottenere un piatto casuale
+        // aggrega una sola funzione $sample per ottenere un piatto casuale
+        // ritorn una array di un singolo piatto
         const randomMeal = await Meal.aggregate([{ $sample: { size: 1 } }]);
         res.json(randomMeal);
     } catch (error) {
@@ -122,6 +125,44 @@ router.get('/categories', async (req, res) => {
     try {
         const categories = await Meal.distinct('strCategory');
         res.json(categories.filter(c => c).sort());
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Errore nella ricerca dei piatti' });
+    }
+});
+
+/**
+ * @swagger
+ * /api/meals/categoriesWithImages:
+ * 
+ * 
+ *   get:
+ *     summary: torna una categoria e una immagine correlata
+ *     tags: [Meals]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: categoria e immagine
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items: { type: string, image: string }
+ *       401:
+ *         description: Token mancante o non valido
+ *       404:
+ *         description: Categoria non trovata
+ *       500:
+ *         description: Errore server
+ */
+router.get('/categoriesWithImages', async (req, res) => {
+    try {
+        const categories = await Meal.aggregate([
+            { $group: { _id: '$strCategory', image: { $first: '$strMealThumb' } } },
+            { $project: { _id: 0, category: '$_id', image: 1 } }
+        ]);
+        res.json(categories);
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Errore nella ricerca dei piatti' });

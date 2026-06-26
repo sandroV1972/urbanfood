@@ -210,8 +210,8 @@
         const token = localStorage.getItem('token');
         if (!token) window.location.href = '/';
 
-        const payload = JSON.parse(atob(token.split('.')[1]));
-        if (payload.usrType !== 'ristoratore') window.location.href = '/';
+        const role = JSON.parse(atob(token.split('.')[1])).usrType;
+        if (role !== 'ristoratore') window.location.href = '/';
 
         const form = document.getElementById('restaurantForm');
         const editId = document.getElementById('editId');

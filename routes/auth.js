@@ -40,6 +40,9 @@ router.post('/register', async (req, res) => {
         const { name, email, password, usrType } = req.body;
         const hashedPassword = await bcrypt.hash(password, 10);
         const user = await User.create({ name, email, password: hashedPassword, usrType });
+
+        // crea token per autenticazione. Un token jwt contiene un id, email, name e usrType (ristoratore/cliente)
+        // per poter identificare l'utente. Il token è valido per 1day (vedi JWT_SECRET in .env)
         const token = jwt.sign({ id: user.id, email: user.email, name: user.name, usrType: user.usrType }, process.env.JWT_SECRET);
         res.json({ token, user: { name, email, usrType } });
     } catch (error) {
@@ -134,6 +137,9 @@ router.get('/profile', auth, async (req, res) => {
 router.put('/profile', auth, async (req, res) => {
     try {
         const { name, email, address, credit_card, preferenze, phone } = req.body;
+        // aggiorna i dati utente e ritorna un nuovo token
+        // user contiene i dati aggiornati "after" la modifica
+        // equivale a {new: true}
         const user = await User.findByIdAndUpdate( req.user.id ,
             { name, email, address, credit_card, preferenze, phone },
             { returnDocument: 'after' });

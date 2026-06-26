@@ -22,7 +22,9 @@ const orderSchema = new mongoose.Schema({
         indirizzo: String,
         telefono: String
     },
-    delivery_cost: { type: Number }
+    delivery_cost: { type: Number },
+    waiting_time: { type: Number },
+    note: String
 });
 
 module.exports = mongoose.model('Order', orderSchema);

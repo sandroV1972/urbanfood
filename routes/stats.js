@@ -57,6 +57,8 @@ const auth = require('../middleware/auth');
  */
 router.get('/restaurant', auth, async (req, res) => {
     try {
+        if (!req.user) return res.status(401).json({ error: 'Token mancante o non valido' });
+        
         const restaurant = await Restaurant.findOne({ owner: req.user.id });
         if (!restaurant) return res.status(404).json({ error: 'Ristorante non trovato' });
 

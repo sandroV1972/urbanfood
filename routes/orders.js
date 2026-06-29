@@ -81,12 +81,9 @@ router.get('/', auth, async (req, res) => {
         if (req.query.period === 'today' || req.query.period === 'past') {
             const startOfDay = new Date();
             startOfDay.setHours(0, 0, 0, 0);
-
-            if (req.query.period === 'today') {
-                filter.date = { $gte: startOfDay };
-            } else {
-                filter.date = { $lt: startOfDay };
-            }
+            filter.date = req.query.period === 'today'
+                ? { $gte: startOfDay }
+                : { $lt: startOfDay };
         }
 
         const orders = await Order.find(filter)
@@ -136,6 +133,7 @@ router.get('/', auth, async (req, res) => {
 router.get('/restaurant', auth, async (req, res) => {
     try {
         const restaurant = await Restaurant.findOne({ owner: req.user.id });
+        if(!req.user.id) return res.status(401).json({ error: 'Token mancante o non valido' });
         let orders;
         if (!restaurant) return res.status(404).json({ error: 'Ristorante non trovato' });
             if (req.query.date) {
@@ -277,6 +275,7 @@ router.get('/:id', auth, async (req, res) => {
  *               $ref: '#/components/schemas/Order'
  *       400:
  *         description: Validazione fallita (es. domicilio con < 2 persone)
+ *                      Oppure la distanza è > 15km 
  *       401:
  *         description: Token mancante o non valido
  *       500:
@@ -289,8 +288,6 @@ router.post('/', auth, async (req, res) => {
         // Validazione: domicilio solo per 2+ persone
         if (delivery.dove === 'domicilio' && people < 2) {
             return res.status(400).json({ error: 'Consegna a domicilio disponibile solo per almeno 2 persone' });
-            console.log('Calling OSRM:', rest.address, '->', delivery.indirizzo);
-
         }
 
         let delivery_cost = 0;
@@ -300,6 +297,12 @@ router.post('/', auth, async (req, res) => {
             console.log('Calling OSRM:', rest.address, '->', delivery.indirizzo);
             const route = await getRouteDistance(rest.address, delivery.indirizzo);
             //  calcola il costo della consegna a domicilio 50cent per km
+            if (!route) {
+                return res.status(500).json({ error: 'Errore nel calcolo del costo della consegna' });
+            }
+            if(route.distanceKm > 15){
+                return res.status(400).json({ error: 'Consegna a domicilio disponibile solo per almeno 15 km' });
+            }
             delivery_cost = Math.round(route.distanceKm * 0.5 * 100) / 100;
         }
 
@@ -330,7 +333,8 @@ router.post('/', auth, async (req, res) => {
  *     summary: Aggiorna lo stato di un ordine
  *     description: |
  *       Cambia lo stato di un ordine. Permessi:
- *       - `consegnato` può essere settato solo dal cliente proprietario dell'ordine
+ *       - `consegnato` su ordine **a domicilio**: lo conferma il cliente proprietario dell'ordine
+ *       - `consegnato` su ordine **ritiro al ristorante**: lo conferma il ristoratore (consegna a mano)
  *       - Stati intermedi (`in_preparazione`, `in_consegna`) solo dal ristoratore proprietario del ristorante
  *     tags: [Orders]
  *     security:
@@ -375,16 +379,23 @@ router.put('/:id/status', auth, async (req, res) => {
         const order = await Order.findById(req.params.id);  // ← solo lettura
         if (!order) return res.status(404).json({ error: 'Ordine non trovato' });
 
-        // Controllo permessi PRIMA di salvare
-        if (status === 'consegnato') {
-            if (order.user.toString() !== req.user.id) {
-                return res.status(403).json({ error: 'Solo il cliente può confermare la consegna' });
-            }
+        // Controllo permessi PRIMA di salvare:
+        // - 'consegnato' su ordine domicilio: lo conferma il cliente
+        // - 'consegnato' su ordine ritiro: lo conferma il ristoratore (consegna a mano)
+        // - tutti gli altri stati: solo il ristoratore
+        const restaurant = await Restaurant.findById(order.restaurant);
+        const isOwner = restaurant && restaurant.owner.toString() === req.user.id;
+        const isCustomer = order.user.toString() === req.user.id;
+        // Ordine domicilio
+        // Impediamo esplicitamente al ristoratore di impostare
+        // lo stato a 'consegnato' per gli ordini a domicilio.
+        if (status === 'consegnato' && order.delivery.dove === 'domicilio') {
+            if (!isCustomer) return res.status(403).json({ error: 'Solo il cliente può confermare la consegna' });
         } else {
-            const restaurant = await Restaurant.findById(order.restaurant);
-            if (!restaurant || restaurant.owner.toString() !== req.user.id) {
-                return res.status(403).json({ error: 'Non autorizzato' });
-            }
+            // Per tutti gli altri casi (inclusi gli ordini a ritiro o
+            // qualsiasi altro stato), solo il proprietario del ristorante
+            // può modificare lo stato.
+            if (!isOwner) return res.status(403).json({ error: 'Non autorizzato' });
         }
 
         order.status = status;       // ← salva solo dopo i check
@@ -441,7 +452,7 @@ router.delete('/:id', auth, async (req, res) => {
         const order = await Order.findById(req.params.id);
         if (!order) return res.status(404).json({ error: 'Ordine non trovato' });
 
-        // Permesso: cliente proprietario OPPURE ristoratore proprietario del ristorante
+        // Permesso: cliente proprietario dell'ordine OPPURE ristoratore proprietario del ristorante
         const isCustomer = order.user.toString() === req.user.id;
         let isOwner = false;
         if (!isCustomer) {
@@ -464,6 +475,53 @@ router.delete('/:id', auth, async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Errore nella cancellazione dell\'ordine' });
+    }
+});
+
+/**
+ * @swagger
+ * /api/orders/restaurant/{id}/queue:
+ *   get:
+ *     summary: Ordini con ritiro al ristorante ancora in coda oggi
+ *     description: |
+ *       Ritorna il numero di ordini con ritiro al ristorante non ancora completati
+ *       (status `ordinato` o `in_preparazione`) per la giornata corrente. Serve per
+ *       stimare il tempo di attesa di un nuovo ordine con ritiro.
+ *     tags: [Orders]
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID del ristorante
+ *     responses:
+ *       200:
+ *         description: Numero di ordini in coda oggi
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: number
+ *       500:
+ *         description: Errore server
+ */
+router.get('/restaurant/:id/queue', async (req, res) => {
+    try {
+        const startOfDay = new Date();
+        startOfDay.setHours(0, 0, 0, 0);
+        const endOfDay = new Date();
+        endOfDay.setHours(23, 59, 59, 999);
+
+        const orderCount = await Order.countDocuments({
+            restaurant: req.params.id,
+            status: { $in: ['ordinato', 'in_preparazione'] },
+            'delivery.dove': 'ristorante',
+            date: { $gte: startOfDay, $lte: endOfDay }
+        });
+        res.json(orderCount);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Errore nel recupero degli ordini' });
     }
 });
 

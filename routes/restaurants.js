@@ -62,6 +62,8 @@ router.get('/', async (req, res) => {
  */
 router.get('/mine', auth, async (req, res) => {
     try {
+        if (!req.user) return res.status(401).json({ error: 'Token mancante o non valido' });
+
         const restaurants = await Restaurant.find({ owner: req.user.id });
         res.json(restaurants);
     } catch (error) {
@@ -151,8 +153,8 @@ router.get('/search', async (req, res) => {
  * @swagger
  * /api/restaurants/order/{id}:
  *   get:
- *     summary: Dettaglio pubblico di un ristorante
- *     description: Endpoint pubblico per la pagina cliente, ritorna il ristorante per id
+ *     summary: Dettaglio ristorante per ordine
+ *     description: Ritorna i dettagli del ristorante per effettuare un ordine
  *     tags: [Restaurants]
  *     parameters:
  *       - name: id
@@ -218,13 +220,15 @@ router.get('/order/:id', async (req, res) => {
  */
 router.get('/:id', auth, async (req, res) => {
     try {
+        if (!req.user) return res.status(401).json({ error: 'Token mancante o non valido' });
+
         const restaurant = await Restaurant.findById(req.params.id);
-        const menu = await Restaurant.findById(req.params.id).populate('menu');
         if (!restaurant) return res.status(404).json({ error: 'Ristorante non trovato' });
 
         if (restaurant.owner.toString() !== req.user.id) {
-            return res.status(403).json({ error: 'Non autorizzato' });
+            return res.status(403).json({ error: 'Non sei il proprietario del ristorante' });
         }
+
         res.json(restaurant);
     } catch (error) {
         console.error(error);
@@ -269,6 +273,8 @@ router.get('/:id', auth, async (req, res) => {
  */
 router.post('/', auth, upload.single('image'), async (req, res) => {
     try {
+        if (!req.user) return res.status(401).json({ error: 'Token mancante o non valido' });
+
         const { name, address, phone, piva, description } = req.body;
         const image = req.file ? '/uploads/' + req.file.filename : null;
         const restaurant = await Restaurant.create({
@@ -328,6 +334,8 @@ router.post('/', auth, upload.single('image'), async (req, res) => {
  */
 router.put('/:id', auth, upload.single('image'), async (req, res) => {
     try {
+        if (!req.user) return res.status(401).json({ error: 'Token mancante o non valido' });
+
         const restaurant = await Restaurant.findById(req.params.id);
         if (!restaurant) return res.status(404).json({ error: 'Ristorante non trovato' });
         if (restaurant.owner.toString() !== req.user.id) {
@@ -383,6 +391,8 @@ router.put('/:id', auth, upload.single('image'), async (req, res) => {
  */
 router.delete('/:id', auth, async (req, res) => {
     try {
+        if (!req.user) return res.status(401).json({ error: 'Token mancante o non valido' });
+        
         const restaurant = await Restaurant.findById(req.params.id);
         if (!restaurant) return res.status(404).json({ error: 'Ristorante non trovato' });
         if (restaurant.owner.toString() !== req.user.id) {

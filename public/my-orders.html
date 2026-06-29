@@ -194,7 +194,6 @@
                alert('Errore nella creazione della recensione');
            }
         }
-
         async function loadOrders(period) {
             const reviewsRes = await fetch('/api/reviews/mine', {
                 headers: { 'Authorization': `Bearer ${token}` }

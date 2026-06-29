@@ -62,7 +62,7 @@ router.get('/mine', auth, async (req, res) => {
     try {
         const restaurant = await Restaurant.findOne({ owner: req.user.id });
         if (!restaurant) return res.status(404).json({ error: 'Ristorante non trovato' });
-
+        // end: -1 => ordina per data di fine decrescente
         const offers = await Offer.find({ restaurant: restaurant._id }).sort({ end: -1 });
         res.json(offers);
     } catch (error) {

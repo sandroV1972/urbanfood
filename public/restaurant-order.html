@@ -30,6 +30,7 @@
                 <p id="restaurantDescription" class="text-muted"></p>
                 <p><i class="bi bi-geo-alt"></i> <span id="restaurantAddress"></span></p>
                 <p><i class="bi bi-telephone"></i> <span id="restaurantPhone"></span></p>
+                <p><i class="bi bi-clock"></i> Attesa per ritiro: <span id="waitingTimeContainer">…</span></p>
             </div>
             <div class="col-md-6">
                 <div id="map" style="width: 100%; height: 350px; border-radius: 16px; border: 1px solid rgba(0,206,209,0.15);"></div>
@@ -158,6 +159,7 @@
         });
 
         // Carica info ristorante
+        showWaitingTime();
         fetch(`/api/restaurants/order/${restaurantId}`)
             .then(r => r.json())
             .then(restaurant => {
@@ -308,6 +310,11 @@
                 });
                 document.getElementById('cartTotal').textContent = `€${cartTotal.toFixed(2)}`;
             }
+        }
+        async function showWaitingTime() {
+            const res = await fetch(`/api/orders/restaurant/${restaurantId}/queue`);
+            const queue = await res.json();
+            document.getElementById('waitingTimeContainer').textContent = `${queue * 10} minuti`;
         }
         function checkout() {
             document.getElementById('checkoutPeople').dispatchEvent(new Event('input'));

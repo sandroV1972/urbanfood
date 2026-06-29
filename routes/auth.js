@@ -75,6 +75,9 @@ router.post('/register', async (req, res) => {
 router.get('/profile', auth, async (req, res) => {
     try {
         const user = await User.findById(req.user.id).select('-password');
+        if (!user) {
+            return res.status(401).json({ error: 'Token mancante o non valido' });
+        }
         res.json(user);
     } catch (error) {
         console.error(error);
@@ -143,6 +146,9 @@ router.put('/profile', auth, async (req, res) => {
         const user = await User.findByIdAndUpdate( req.user.id ,
             { name, email, address, credit_card, preferenze, phone },
             { returnDocument: 'after' });
+        if (!user) {
+            return res.status(401).json({ error: 'Token mancante o non valido' });
+        }
         const token = jwt.sign({ id: user.id, email: user.email, name: user.name, usrType: user.usrType }, process.env.JWT_SECRET);
         res.json({ token, user: { name, email, usrType: user.usrType } });
     } catch (error) {
@@ -188,6 +194,9 @@ router.put('/password', auth, async (req, res) => {
     try {
         const {oldPassword, newPassword, } = req.body;
         const user = await User.findById(req.user.id);
+        if (!user) {
+            return res.status(401).json({ error: 'Token mancante o non valido' });
+        }
         const match = await bcrypt.compare(oldPassword, user.password);
         if (!match) return res.status(401).json({ error: 'Password errata' });
         const hashedPassword = await bcrypt.hash(newPassword, 10);
@@ -220,12 +229,17 @@ router.put('/password', auth, async (req, res) => {
  *                 message: { type: string }
  *       401:
  *         description: Token mancante o non valido
+ *       404:
+ *         description: Utente non trovato
  *       500:
  *         description: Errore server
  */
 router.delete('/delete', auth, async (req, res) => {
     try {
-        await User.findByIdAndDelete(req.user.id);
+        const user = await User.findByIdAndDelete(req.user.id);
+        if (!user) {
+            return res.status(404).json({ error: 'Utente non trovato' });
+        }
         res.json({ message: 'Account cancellato' });
     } catch (error) {
         console.error(error);

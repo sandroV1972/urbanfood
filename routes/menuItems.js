@@ -25,13 +25,20 @@ const Meal = require('../models/Meal');
  *                 $ref: '#/components/schemas/MenuItem'
  *       401:
  *         description: Token mancante o non valido
+ *       404:
+ *         description: Ristorante non trovato
  *       500:
  *         description: Errore server
  */
 router.get('/', auth, async (req, res) => {
     try {
+        const user = req.user;
         const restaurant = await Restaurant.findOne({ owner: req.user.id });
+        if (!restaurant) return res.status(404).json({ error: 'Ristorante non trovato' });
+        if (!user) return res.status(401).json({ error: 'Token mancante o non valido' });
+        
         const menuItems = await MenuItem.find({ restaurant: restaurant._id });
+
         res.json(menuItems);
     } catch (error) {
         console.error(error);
@@ -76,14 +83,24 @@ router.get('/', auth, async (req, res) => {
  *                 $ref: '#/components/schemas/MenuItem'
  *       401:
  *         description: Token mancante o non valido
+ *       404:
+ *         description: Ristorante non trovato
  *       500:
  *         description: Errore server
  */
 router.get('/search', auth, async (req, res) => {
     try {
-        const { name, category, minPrice, maxPrice } = req.query;
-        const filter = { available: true };
 
+        if (!req.user) return res.status(401).json({ error: 'Token mancante o non valido' });
+        if (!req.user.restaurant) return res.status(404).json({ error: 'Ristorante non trovato' }); 
+
+        const { name, category, minPrice, maxPrice } = req.query;
+        // available: true su filter perche' si vogliono solo piatti disponibili
+        const filter = { available: true };
+        // filtro per nome, $regex e $options per case-insensitive,
+        // $regex per espressione regolare per il filtro del nome 
+        // $options 'i' per case-insensitive
+        // $or per combinare piu' filtri
         if (name && name.trim()) {
             filter.strMeal = { $regex: name.trim(), $options: 'i' };
         }
@@ -171,9 +188,12 @@ router.get('/restaurant/:id', async (req, res) => {
  */
 router.get('/cuisines', auth, async (req, res) => {
     try {
+        if (!req.user) return res.status(401).json({ error: 'Token mancante o non valido' });
         const restaurant = await Restaurant.findOne({owner: req.user.id});
+
         if (!restaurant) return res.status(404).json({ error: 'Ristorante non trovato' });
         const cuisines = await MenuItem.distinct('strArea', {restaurant: restaurant._id});
+        
         res.json(cuisines);
     } catch (error) {
         console.error(error);
@@ -212,8 +232,11 @@ router.get('/cuisines', auth, async (req, res) => {
  */
 router.get('/:id', auth, async (req, res) => {
     try {
+        if (!req.user) return res.status(401).json({ error: 'Token mancante o non valido' });
+
         const menuItem = await MenuItem.findById(req.params.id);
         if (!menuItem) return res.status(404).json({ error: 'Piatto non trovato' });
+
         res.json(menuItem);
     } catch (error) {
         console.error(error);
@@ -250,6 +273,8 @@ router.get('/:id', auth, async (req, res) => {
  */
 router.delete('/:id', auth, async (req, res) => {
     try {
+        if (!req.user) return res.status(401).json({ error: 'Token mancante o non valido' });
+
         const menuItem = await MenuItem.findById(req.params.id);
         if (!menuItem) return res.status(404).json({ error: 'Piatto non trovato' });
 
@@ -303,6 +328,8 @@ router.delete('/:id', auth, async (req, res) => {
  */
 router.post('/from-catalog', auth, async (req, res) => {
     try {
+        if (!req.user) return res.status(401).json({ error: 'Token mancante o non valido' });
+
         const { mealIds } = req.body;
         const restaurant = await Restaurant.findOne({ owner: req.user.id });
         const meals = await Meal.find({ _id: { $in: mealIds } });
@@ -375,6 +402,8 @@ router.post('/from-catalog', auth, async (req, res) => {
  */
 router.post('/', auth, upload.single('image'), async (req, res) => {
     try {
+        if (!req.user) return res.status(401).json({ error: 'Token mancante o non valido' });
+
         const restaurant = await Restaurant.findOne({ owner: req.user.id });
         const { strMeal, strCategory, strArea, strInstructions, strTags, ingredients, measures, price } = req.body;
 

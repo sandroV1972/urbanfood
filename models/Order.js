@@ -1,10 +1,11 @@
 const mongoose = require('mongoose');
+const { ObjectId } = mongoose.Schema.Types;
 
 const orderSchema = new mongoose.Schema({
-    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    restaurant: { type: mongoose.Schema.Types.ObjectId, ref: 'Restaurant', required: true },
+    user: { type: ObjectId, ref: 'User', required: true },
+    restaurant: { type: ObjectId, ref: 'Restaurant', required: true },
     items: [{
-        menuItem: { type: mongoose.Schema.Types.ObjectId, ref: 'MenuItem', required: true },
+        menuItem: { type: ObjectId, ref: 'MenuItem', required: true },
         quantity: { type: Number, required: true },
         price: { type: Number, required: true }
     }],

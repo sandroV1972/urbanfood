@@ -166,6 +166,8 @@ router.get('/:id', async (req, res) => {
  */
 router.post('/', auth, async (req, res) => {
     try {
+        if (!req.user) return res.status(401).json({ error: 'Token mancante o non valido' });
+
         const { restaurant: restaurantId, rating, comment } = req.body;
 
         // Verifica che il ristorante esista
@@ -254,6 +256,8 @@ router.post('/', auth, async (req, res) => {
  */
 router.put('/:id', auth, async (req, res) => {
     try {
+        if (!req.user) return res.status(401).json({ error: 'Token mancante o non valido' });
+
         const review = await Review.findById(req.params.id);
         if (!review) {
             return res.status(404).json({ error: 'Recensione non trovata' });
@@ -307,6 +311,8 @@ router.put('/:id', auth, async (req, res) => {
  */
 router.delete('/:id', auth, async (req, res) => {
     try {
+        if (!req.user) return res.status(401).json({ error: 'Token mancante o non valido' });
+        
         const review = await Review.findById(req.params.id);
         if (!review) {
             return res.status(404).json({ error: 'Recensione non trovata' });

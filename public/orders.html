@@ -58,26 +58,29 @@
             'in_consegna':     { label: 'In consegna',     variant: 'info',      icon: 'bi-truck' },
             'consegnato':      { label: 'Consegnato',      variant: 'success',   icon: 'bi-bag-check' }
         };
-        const STATUS_FLOW = ['ordinato', 'in_preparazione', 'in_consegna'];
+        const STATUS_FLOW = ['ordinato', 'in_preparazione', 'in_consegna', 'consegnato'];
 
         function statusBadge(status) {
             const s = STATUS_LABELS[status] || { label: status, variant: 'secondary', icon: 'bi-question' };
             return `<span class="badge bg-${s.variant}"><i class="bi ${s.icon} me-1"></i>${s.label}</span>`;
         }
 
-        function nextStatus(status) {
-            const idx = STATUS_FLOW.indexOf(status);
+        function nextStatus(order) {
+            // Ordini con ritiro al ristorante saltano lo step "in_consegna"
+            if (order.status === 'in_preparazione' && order.delivery?.dove === 'ristorante') {
+                return 'consegnato';
+            }
+            const idx = STATUS_FLOW.indexOf(order.status);
             return idx === -1 || idx === STATUS_FLOW.length - 1 ? null : STATUS_FLOW[idx + 1];
         }
 
         function advanceButton(order) {
-            const next = nextStatus(order.status);
+            const next = nextStatus(order);
             if (!next) return '';
             return `<button class="btn-add btn-sm mt-2" onclick="advanceStatus('${order._id}', '${next}')">
                 <i class="bi bi-arrow-right me-1"></i>Avanza a: ${STATUS_LABELS[next].label}
             </button>`;
         }
-
         function formatTime(dateString) {
             return new Date(dateString).toLocaleString('it-IT', {
                 hour: '2-digit', minute: '2-digit'

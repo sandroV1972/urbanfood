@@ -29,6 +29,8 @@ router.get('/random', async (req, res) => {
         // usa una funzione di aggregazione per ottenere un piatto casuale
         // aggrega una sola funzione $sample per ottenere un piatto casuale
         // ritorn una array di un singolo piatto
+        // la funzione $sample ha un campo size che indica il numero di piatti da ritornare
+        // restituisce un piatto casuale vedi https://www.mongodb.com/docs/manual/reference/operator/aggregation/sample/
         const randomMeal = await Meal.aggregate([{ $sample: { size: 1 } }]);
         res.json(randomMeal);
     } catch (error) {
@@ -41,8 +43,9 @@ router.get('/random', async (req, res) => {
  * @swagger
  * /api/meals:
  *   get:
- *     summary: Lista tutti i piatti del catalogo
- *     description: Endpoint pubblico, ritorna l'intero catalogo dei piatti disponibili
+ *     summary: Lista tutti i piatti del catalogo, meal_1.js fornite dal progetto
+ *     description: Endpoint pubblico, ritorna l'intero catalogo dei piatti standard
+ *                  pre caricati dal file meal_1.js
  *     tags: [Meals]
  *     responses:
  *       200:
@@ -73,10 +76,10 @@ router.get('/', async (req, res) => {
 /**
  * @swagger
  * 
- * /api/meals/cousines:
+ * /api/meals/cuisines:
  *   get:
  *     summary: Restituisce tutti i tipi di cucina
- *     tags: [MenuItems]
+ *     tags: [Meals]
  *     responses:
  *       200:
  *         description: Lista dei tipi di cucina
@@ -86,6 +89,8 @@ router.get('/', async (req, res) => {
  *               type: array
  *               items:
  *                 type: string
+ *       500:
+ *         description: Errore server
  */
 router.get('/cuisines', async (req, res) => {
     try {
@@ -99,13 +104,9 @@ router.get('/cuisines', async (req, res) => {
 /**
  * @swagger
  * /api/meals/categories:
- * 
- * 
  *   get:
  *     summary: Tipologie di Piatti disponibili
  *     tags: [Meals]
- *     security:
- *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: Array dei tipi di piatti (strCategory) distinti presenti
@@ -114,10 +115,6 @@ router.get('/cuisines', async (req, res) => {
  *             schema:
  *               type: array
  *               items: { type: string }
- *       401:
- *         description: Token mancante o non valido
- *       404:
- *         description: Ristorante non trovato
  *       500:
  *         description: Errore server
  */
@@ -134,25 +131,21 @@ router.get('/categories', async (req, res) => {
 /**
  * @swagger
  * /api/meals/categoriesWithImages:
- * 
- * 
  *   get:
- *     summary: torna una categoria e una immagine correlata
+ *     summary: Torna ogni categoria con un'immagine rappresentativa
  *     tags: [Meals]
- *     security:
- *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: categoria e immagine
+ *         description: Array di oggetti `{ category, image }`
  *         content:
  *           application/json:
  *             schema:
  *               type: array
- *               items: { type: string, image: string }
- *       401:
- *         description: Token mancante o non valido
- *       404:
- *         description: Categoria non trovata
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   category: { type: string }
+ *                   image:    { type: string }
  *       500:
  *         description: Errore server
  */
@@ -162,6 +155,11 @@ router.get('/categoriesWithImages', async (req, res) => {
             { $group: { _id: '$strCategory', image: { $first: '$strMealThumb' } } },
             { $project: { _id: 0, category: '$_id', image: 1 } }
         ]);
+        // errore se non ci sono categorie 404
+        if (categories.length === 0) {
+            return res.status(404).json({ error: 'Categoria non trovata' });
+        }
+        // no authentication required for this endpoint
         res.json(categories);
     } catch (error) {
         console.error(error);
